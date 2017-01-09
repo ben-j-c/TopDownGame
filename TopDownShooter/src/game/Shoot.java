@@ -337,6 +337,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////START OF GAME LOGIC//////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	public static void main(String[] args)
 	{
 		Shoot shoot = new Shoot();
@@ -392,6 +396,15 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
 				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
 				
+				for(Triangle t: triangles)
+				{
+					Vector temp1 = t.skew(temp, 0.05);
+					if(temp1 != null)
+					{
+						temp = temp1;
+						break;
+					}
+				}
 				
 				points.add(temp);
 				
@@ -588,7 +601,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			/////////////////SPAWNING MONSTER//////////////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			if(Math.random() < 0.20)
+			if(countMonsters() < 50 && Math.random() < 0.20)
 			{
 				Vector pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
 				
@@ -828,5 +841,16 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			ents.add(temp);
 		}
 		
+	}
+	
+	public int countMonsters()
+	{
+		int count = 0;
+		for(Entity e: ents)
+		{
+			if((e.TYPE & Entity.BODY) != 0)
+				count++;
+		}
+		return count;
 	}
 }
