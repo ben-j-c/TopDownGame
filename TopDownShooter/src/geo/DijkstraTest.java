@@ -57,7 +57,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 		if(e.isAltDown())
 		{
 			start = new Vector(e.getX(), e.getY());
-			for(Vector v : desc.nodes)
+			for(Vector v : desc.getNodes())
 			{
 				if(start.skew(v) < size/2)
 					start = v;
@@ -66,7 +66,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 		else
 		{
 			buffer[0] = new Vector(e.getX(), e.getY());
-			for(Vector v : desc.nodes)
+			for(Vector v : desc.getNodes())
 			{
 				if(buffer[0].skew(v) < size/2)
 					buffer[0] = v;
@@ -84,7 +84,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 		if(e.isAltDown())
 		{
 			end = new Vector(e.getX(), e.getY());
-			for(Vector v : desc.nodes)
+			for(Vector v : desc.getNodes())
 			{
 				if(end.skew(v) < size/2)
 					end = v;
@@ -97,7 +97,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 		else
 		{
 			buffer[1] = new Vector(e.getX(), e.getY());
-			for(Vector v : desc.nodes)
+			for(Vector v : desc.getNodes())
 			{
 				if(buffer[1].skew(v) < size/2)
 					buffer[1] = v;
@@ -105,10 +105,10 @@ public class DijkstraTest extends JPanel implements MouseListener
 			
 			if(buffer[1] != buffer[0]  && buffer[0].skew(buffer[1]) > size/2)
 			{
-				desc.nodes.add(buffer[1]);
-				desc.nodes.add(buffer[0]);
+				desc.getNodes().add(buffer[1]);
+				desc.getNodes().add(buffer[0]);
 				
-				desc.edges.add(new Dijkstra.Edge(buffer[0], buffer[1]));
+				desc.getEdges().add(new Dijkstra.Edge(buffer[0], buffer[1]));
 			}
 			
 			System.out.println(buffer[1]);
@@ -125,12 +125,12 @@ public class DijkstraTest extends JPanel implements MouseListener
 		g.fillRect(0, 0, 800, 800);
 		
 		g.setColor(Color.WHITE);
-		for(Vector v : desc.nodes)
+		for(Vector v : desc.getNodes())
 		{	
 			g.fillOval((int) v.x - size/2, (int) v.y - size/2, size, size);
 		}
 		g.setColor(Color.GRAY);
-		for(Dijkstra.Edge e : desc.edges)
+		for(Dijkstra.Edge e : desc.getEdges())
 		{	
 			g.drawLine((int) e.a.x, (int) e.a.y, (int) e.b.x, (int) e.b.y);
 		}

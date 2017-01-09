@@ -91,6 +91,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	
 	private ArrayList<Vector> points = new ArrayList<Vector>();
 	private Dijkstra.Description desc = new Dijkstra.Description();
+	private Dijkstra.Description descWithPlayer = new Dijkstra.Description();
 	private ArrayList<Triangle> triangles = new ArrayList<Triangle>();
 	
 	public boolean GAME_STARTED = false;
@@ -249,12 +250,52 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		if(canvas.getMousePosition() != null)
 		{
+			java.awt.Point pos = canvas.getMousePosition();
+			
 			gl.glBegin(gl.GL_POINTS);
 			gl.glColor3d(Math.random(), Math.random(), Math.random());
-			gl.glVertex2d((2*(double)canvas.getMousePosition().getX() - (double) canvas.getSize().getWidth())/(double)canvas.getSize().getWidth(),
-					-(2*(double)canvas.getMousePosition().getY() - (double)canvas.getSize().getHeight())/(double)canvas.getSize().getHeight());
+			gl.glVertex2d((2*(double)pos.getX() - (double) canvas.getSize().getWidth())/(double)canvas.getSize().getWidth(),
+					-(2*(double)pos.getY() - (double)canvas.getSize().getHeight())/(double)canvas.getSize().getHeight());
 			gl.glEnd();
 		}
+		
+		
+
+		gl.glBegin(GL.GL_LINES);
+		gl.glColor3d(0.5, 0.5, 0.5);
+		for(Dijkstra.Edge e : desc.getEdges())
+		{
+			gl.glVertex2d(e.a.x, e.a.y);
+			gl.glVertex2d(e.b.x, e.b.y);
+		}
+		gl.glEnd();
+		
+		gl.glBegin(GL.GL_POINTS);
+		gl.glColor3d(0.5, 0, 1);
+		for(Vector v : desc.getNodes())
+		{
+			gl.glVertex2d(v.x, v.y);
+		}
+		gl.glEnd();
+		
+		
+		gl.glBegin(GL.GL_LINES);
+		gl.glColor3d(0.5, 0.5, 0.5);
+		for(Dijkstra.Edge e : descWithPlayer.getEdges())
+		{
+			gl.glVertex2d(e.a.x, e.a.y);
+			gl.glVertex2d(e.b.x, e.b.y);
+		}
+		gl.glEnd();
+		
+		gl.glBegin(GL.GL_POINTS);
+		gl.glColor3d(0.5, 0, 1);
+		for(Vector v : descWithPlayer.getNodes())
+		{
+			gl.glVertex2d(v.x, v.y);
+		}
+		gl.glEnd();
+		
 		
 		/*
 		gl.glColor4d(1,0,0,0.5);
@@ -265,7 +306,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		gl.glVertex2d(0, 1);
 		
 		gl.glEnd();
-		*/
+		 */
 		
 	}
 	
@@ -279,7 +320,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	public void init(GLAutoDrawable drawable)
 	{
 		GL2 gl = drawable.getGL().getGL2();
-		gl.glPointSize(2f);
+		gl.glPointSize(3.0f);
 		gl.glLineWidth(2.0f);
 		
 		gl.glEnable(GL2.GL_BLEND);
@@ -329,13 +370,20 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				
 				Vector temp2 = desc.getSkewed(temp, 0.05*0.05);
 				if(temp2 == null)
-					points.add(temp);
-				else
-					points.add(temp2);
-				
-				if(points.size()%2 == 0)
 				{
-					desc.addEdge(points.remove(0), points.remove(1));
+					points.add(temp);
+					desc.addNode(temp);
+				}
+				else
+				{
+					points.add(temp2);
+					desc.addNode(temp2);
+				}
+				
+				if(points.size() == 2)
+				{
+					desc.addEdge(points.remove(0), points.remove(0));
+					points.clear();
 				}
 			}
 			else
@@ -343,6 +391,8 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				Vector temp = new Vector();
 				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
 				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
+				
+				
 				points.add(temp);
 				
 				if(points.size()%3 == 0)
@@ -420,7 +470,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 			else if(e.getKeyChar() == 'k')
 			{
+				PLACE_GRAPH = !PLACE_GRAPH;
 				
+				points.clear();
 			}
 		}
 		
@@ -507,7 +559,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 	}
 	
-	@SuppressWarnings("unused")
 	public void stepGame()
 	{
 		if(GAME_STARTED)
@@ -532,8 +583,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 			player.v.unitize();
 			player.v.scaleset(0.0025);
+			
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			/////////////////SPAWNING MONSTER//////////////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
 			if(Math.random() < 0.20)
@@ -563,11 +615,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				}
 				else
 				{	
-					
-					//nl = player.pos.add(player.v.projectOnto(block.block));
-					//block = Triangle.calcIntersect(player.pos, nl, triangles);
-					
-					
+					//Keep projecting onto blocking vector until you are no longer being blocked
 					do
 					{
 						nl = player.pos.add(nl.sub(player.pos).projectOnto(block.block));
@@ -575,16 +623,37 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 					}while(block.block != null && block.t < 1);
 					player.pos.set(nl);
 				}
+				
+				ArrayList<Vector> extraNodes = new ArrayList<Vector>();
+				ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
+				extraNodes.add(player.pos);
+				
+				for(Vector v: desc.getNodes())
+				{
+					BlockingVector canSee = Triangle.calcIntersect(player.pos, v, triangles);
+					
+					if(canSee.block == null || canSee.t >= 1)
+					{
+						System.out.println("asdsf");
+						extraEdges.add(new Dijkstra.Edge(player.pos, v));
+					}
+				}
+				
+				descWithPlayer = new Dijkstra.Description(desc, extraNodes, extraEdges);
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
+				ArrayList<Entity> toRemove = new ArrayList<Entity>();
+				
 				for(Entity e : ents)
 				{
+					Vector headTo = getNextMoveTo(e);
+					
 					if((e.TYPE & Entity.BODY) == Entity.BODY)
 					{
-						e.v = player.pos.sub(e.pos).unitize();
+						e.v = headTo.sub(e.pos).unitize();
 						e.v.scaleset(0.002);
 						
 						Vector nl = e.pos.add(e.v);
@@ -595,9 +664,19 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 							double skew = e.pos.skew(f.pos);
 							if(f != e && skew < 0.01)
 							{
-								Vector dir = nl.sub(f.pos);
-								
-								nv.addset((dir.scale(0.5/(skew*skew))).scale(0.002));
+								if(f.TYPE == Entity.PROJECTILE)
+								{
+									toRemove.add(f);
+									toRemove.add(e);
+									f.TYPE = Entity.NULL;
+								}
+								else
+								{
+									
+									Vector dir = nl.sub(f.pos);
+									
+									nv.addset((dir.scale(0.5/(skew*skew))).scale(0.002));
+								}
 								
 							}
 						}
@@ -622,6 +701,8 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 						
 					}
 				}
+				
+				ents.removeAll(toRemove);
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -666,6 +747,40 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		}
 	}
 	
+	private Vector getNextMoveTo(Entity e)
+	{
+		Vector pos = player.pos;
+		
+		BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, triangles);
+		
+		if(bv.block != null && bv.t <= 1)
+		{
+			
+			ArrayList<Vector> extraNodes = new ArrayList<Vector>();
+			ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
+			extraNodes.add(e.pos);
+			
+			for(Vector v: desc.getNodes())
+			{
+				BlockingVector canSee = Triangle.calcIntersect(e.pos, v, triangles);
+				
+				if(canSee.block == null || canSee.t >= 1)
+				{
+					extraEdges.add(new Dijkstra.Edge(e.pos, v));
+				}
+			}
+			
+			Dijkstra.Description temp = new Dijkstra.Description(descWithPlayer, extraNodes, extraEdges);
+			
+			ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
+			
+			return v.get(v.size() - 1);
+		}
+		
+		return pos;
+		
+		
+	}
 	/**
 	 * 
 	 * @param x the location of the mouse on screen

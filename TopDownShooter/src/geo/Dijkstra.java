@@ -14,8 +14,8 @@ public final class Dijkstra
 	 */
 	public static class Description
 	{
-		java.util.TreeSet<Vector> nodes = new java.util.TreeSet<Vector>();
-		java.util.TreeSet<Edge> edges = new java.util.TreeSet<Edge>();
+		private java.util.TreeSet<Vector> nodes = new java.util.TreeSet<Vector>();
+		private java.util.TreeSet<Edge> edges = new java.util.TreeSet<Edge>();
 		
 		/**
 		 * Do nothing else
@@ -32,10 +32,10 @@ public final class Dijkstra
 		 */
 		public Description(Description d, java.util.ArrayList<Vector> nodes, java.util.ArrayList<Edge> edges)
 		{
-			nodes.addAll(d.nodes);
+			nodes.addAll(d.getNodes());
 			nodes.addAll(nodes);
 			
-			edges.addAll(d.edges);
+			edges.addAll(d.getEdges());
 			edges.addAll(edges);
 		}
 		/**
@@ -47,7 +47,7 @@ public final class Dijkstra
 		{
 			java.util.ArrayList<Vector> returner = new java.util.ArrayList<Vector>();
 			
-			for(Edge e : edges)
+			for(Edge e : getEdges())
 			{
 				Vector oth = e.getOther(node);
 				if(oth != null)
@@ -60,7 +60,7 @@ public final class Dijkstra
 		public Vector getSkewed(Vector skew, double skewSqr)
 		{
 			Vector ret = null;
-			for(Vector v: nodes)
+			for(Vector v: getNodes())
 			{
 				if(skew.sub(v).magsqr() <= skewSqr)
 				{
@@ -76,12 +76,32 @@ public final class Dijkstra
 		{
 			edges.add(new Edge(a,b));
 		}
+		/**
+		 * @return the nodes
+		 */
+		public java.util.TreeSet<Vector> getNodes()
+		{
+			return nodes;
+		}
+		/**
+		 * @return the edges
+		 */
+		public java.util.TreeSet<Edge> getEdges()
+		{
+			return edges;
+		}
+		public void addNode(Vector node)
+		{
+			nodes.add(node);
+			
+		}
 	}
-	public static class Edge
+	public static class Edge implements Comparable<Edge>
 	{
-		Vector a, b;
+		public Vector a;
+		public Vector	b;
 		
-		Edge(Vector a, Vector b)
+		public Edge(Vector a, Vector b)
 		{
 			this.a = a;
 			this.b = b;
@@ -95,6 +115,17 @@ public final class Dijkstra
 				return a;
 			else
 				return null;
+		}
+
+		@Override
+		public int compareTo(Edge e)
+		{
+			if(e == this)
+				return 0;
+			else if(e.a.sub(b).magsqr() < a.sub(b).magsqr())
+				return -1;
+			else
+				return 1;
 		}
 	}
 	
@@ -110,7 +141,7 @@ public final class Dijkstra
 	{
 		java.util.ArrayList<Vector> nodes = new java.util.ArrayList<Vector>();
 		
-		nodes.addAll(desc.nodes);
+		nodes.addAll(desc.getNodes());
 		java.util.ArrayList<Vector> path = new java.util.ArrayList<Vector>();
 		java.util.HashMap<Vector, Double> dist = new java.util.HashMap<Vector, Double>();
 		java.util.HashMap<Vector, Vector> prev = new java.util.HashMap<Vector, Vector>();
