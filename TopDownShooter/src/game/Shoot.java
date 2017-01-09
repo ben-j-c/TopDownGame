@@ -634,7 +634,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 					
 					if(canSee.block == null || canSee.t >= 1)
 					{
-						System.out.println("asdsf");
 						extraEdges.add(new Dijkstra.Edge(player.pos, v));
 					}
 				}
@@ -774,7 +773,21 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
 			
-			return v.get(v.size() - 1);
+			try
+			{
+				return v.get(v.size() - 2);
+			}
+			catch(Exception exc)
+			{
+				System.out.println(player.pos);
+				System.out.println("desc:\n" + desc);
+				System.out.println();
+				System.out.println("descWithPlayer:\n" + descWithPlayer);
+				System.out.println();
+				System.out.println("temp" + temp);
+				
+				System.exit(1);
+			}
 		}
 		
 		return pos;

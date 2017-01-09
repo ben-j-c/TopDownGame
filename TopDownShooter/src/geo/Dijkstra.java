@@ -32,11 +32,11 @@ public final class Dijkstra
 		 */
 		public Description(Description d, java.util.ArrayList<Vector> nodes, java.util.ArrayList<Edge> edges)
 		{
-			nodes.addAll(d.getNodes());
-			nodes.addAll(nodes);
+			this.nodes.addAll(d.getNodes());
+			this.nodes.addAll(nodes);
 			
-			edges.addAll(d.getEdges());
-			edges.addAll(edges);
+			this.edges.addAll(d.getEdges());
+			this.edges.addAll(edges);
 		}
 		/**
 		 * 
@@ -95,6 +95,13 @@ public final class Dijkstra
 			nodes.add(node);
 			
 		}
+		
+		@Override
+		public String toString()
+		{
+			return "Nodes: " + nodes + "\nEdges: " + edges;
+		}
+		
 	}
 	public static class Edge implements Comparable<Edge>
 	{
@@ -126,6 +133,12 @@ public final class Dijkstra
 				return -1;
 			else
 				return 1;
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "{ " + a + ", " + b + "}";
 		}
 	}
 	
