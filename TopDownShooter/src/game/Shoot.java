@@ -260,7 +260,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		}
 		
 		
-
+		
 		gl.glBegin(GL.GL_LINES);
 		gl.glColor3d(0.5, 0.5, 0.5);
 		for(Dijkstra.Edge e : desc.getEdges())
@@ -773,21 +773,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
 			
-			try
-			{
-				return v.get(v.size() - 2);
-			}
-			catch(Exception exc)
-			{
-				System.out.println(player.pos);
-				System.out.println("desc:\n" + desc);
-				System.out.println();
-				System.out.println("descWithPlayer:\n" + descWithPlayer);
-				System.out.println();
-				System.out.println("temp" + temp);
-				
-				System.exit(1);
-			}
+			return v.get(v.size() - 2);
+			
+			
 		}
 		
 		return pos;
