@@ -11,10 +11,16 @@ Game Instructions:
 Libraries used:
 
 JOGL:
-  glugen-rt.jar/dll
-  jogl-all.jar/dll
-  nativewindow.jar/dll
-  newt.jar/dll
+  glugen-rt.jar
+  jogl-all.jar
+  nativewindow.jar
+  newt.jar
+  
+  Windows DLLs:
+    glugen-rt.dll
+    jogl_desktop.dll
+    nativewindow_awt.dll
+    nativewindow_win32.dll
 
   Availible at: 
     http://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z)
@@ -22,3 +28,6 @@ JOGL:
 
 JRE System Library:
   Availible at wherever.
+  
+Videos:
+
