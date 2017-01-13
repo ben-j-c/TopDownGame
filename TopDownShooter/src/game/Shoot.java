@@ -193,31 +193,34 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			gl.glVertex2d(v.x, v.y);
 		}
 		gl.glEnd();*/
-		gl.glColor3d(0.75,0.75,0.75);
-		gl.glBegin(gl.GL_TRIANGLES);
-		
-		for(Triangle t : triangles)
 		{
-			gl.glVertex2d(t.a.x, t.a.y);
-			gl.glVertex2d(t.b.x, t.b.y);
-			gl.glVertex2d(t.c.x, t.c.y);
+			gl.glColor3d(0.75,0.75,0.75);
+			gl.glBegin(GL2.GL_TRIANGLES);
+			
+			
+			for(Triangle t : triangles)
+			{
+				gl.glVertex2d(t.a.x, t.a.y);
+				gl.glVertex2d(t.b.x, t.b.y);
+				gl.glVertex2d(t.c.x, t.c.y);
+			}
+			
+			gl.glEnd();
+			
+			gl.glBegin(gl.GL_LINES);
+			
+			for(Triangle t : triangles)
+			{
+				gl.glVertex2d(t.a.x, t.a.y);
+				gl.glVertex2d(t.b.x, t.b.y);
+				gl.glVertex2d(t.b.x, t.b.y);
+				gl.glVertex2d(t.c.x, t.c.y);
+				gl.glVertex2d(t.c.x, t.c.y);
+				gl.glVertex2d(t.a.x, t.a.y);
+			}
+			
+			gl.glEnd();
 		}
-		
-		gl.glEnd();
-		
-		gl.glBegin(gl.GL_LINES);
-		
-		for(Triangle t : triangles)
-		{
-			gl.glVertex2d(t.a.x, t.a.y);
-			gl.glVertex2d(t.b.x, t.b.y);
-			gl.glVertex2d(t.b.x, t.b.y);
-			gl.glVertex2d(t.c.x, t.c.y);
-			gl.glVertex2d(t.c.x, t.c.y);
-			gl.glVertex2d(t.a.x, t.a.y);
-		}
-		
-		gl.glEnd();
 		
 		if(GAME_STARTED)
 		{
@@ -275,6 +278,12 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		
 		
+		/*
+		 * Draw the graph
+		 */
+		
+		
+		
 		gl.glBegin(GL.GL_LINES);
 		gl.glColor3d(0.5, 0.5, 0.5);
 		for(Dijkstra.Edge e : desc.getEdges())
@@ -292,6 +301,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		}
 		gl.glEnd();
 		
+		gl.glLineWidth(1.0f);
 		
 		gl.glBegin(GL.GL_LINES);
 		gl.glColor3d(0.5, 0.5, 0.5);
@@ -310,6 +320,21 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		}
 		gl.glEnd();
 		
+		gl.glLineWidth(2.0f);
+		
+		
+		
+		gl.glBegin(GL2.GL_QUADS);
+		
+		gl.glColor4d(0.75, 0.25, 0.25, 0.5);
+		
+		gl.glVertex2d(-1, 1);
+		gl.glVertex2d(-1, 0.95);
+		gl.glVertex2d((player.life - 5.0)/5.0 , 0.95);
+		gl.glVertex2d((player.life - 5.0)/5.0 , 1);
+		
+		
+		gl.glEnd();
 		
 		/*
 		gl.glColor4d(1,0,0,0.5);
@@ -610,6 +635,27 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 			player.v.unitize();
 			player.v.scaleset(0.0025);
+			
+			for(Entity e : ents)
+			{
+				if((e.TYPE & Entity.BODY) != 0)
+				{
+					if(e.pos.skew(player.pos) <= 0.02)
+					{
+						player.life -= 0.01;
+					}
+				}
+			}
+			
+			if(player.life <= 0)
+			{
+				this.GAME_STARTED = false;
+				
+				ents.clear();
+				descWithPlayer = new Dijkstra.Description();
+				
+				return;
+			}
 			
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			/////////////////SPAWNING MONSTER//////////////////////////////////////////////////////////////////////////////////////////////////////
