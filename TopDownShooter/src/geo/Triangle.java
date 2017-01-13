@@ -377,6 +377,6 @@ public class Triangle
 	
 	public String toString()
 	{
-		return a + " " + b + " " + c + "\t" + ab + " " + bc + " " + ca;
+		return a + " " + b + " " + c;
 	}
 }
