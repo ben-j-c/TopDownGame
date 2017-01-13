@@ -43,6 +43,7 @@ public class Map
 			s.close();
 			
 			s = new Scanner(descFile);
+			s.useDelimiter("[^-?\\d\\.?\\d*]+");
 			
 			while(s.hasNext())
 			{
@@ -61,6 +62,8 @@ public class Map
 				
 				desc.addEdge(temp[0], temp[1]);
 			}
+			
+			
 		}
 		catch (FileNotFoundException e)
 		{
