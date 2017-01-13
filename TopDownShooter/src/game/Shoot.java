@@ -205,6 +205,20 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glEnd();
 		
+		gl.glBegin(gl.GL_LINES);
+		
+		for(Triangle t : triangles)
+		{
+			gl.glVertex2d(t.a.x, t.a.y);
+			gl.glVertex2d(t.b.x, t.b.y);
+			gl.glVertex2d(t.b.x, t.b.y);
+			gl.glVertex2d(t.c.x, t.c.y);
+			gl.glVertex2d(t.c.x, t.c.y);
+			gl.glVertex2d(t.a.x, t.a.y);
+		}
+		
+		gl.glEnd();
+		
 		if(GAME_STARTED)
 		{
 			//gl.glColor3d(1, 0, 0);
