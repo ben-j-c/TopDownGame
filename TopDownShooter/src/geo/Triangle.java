@@ -379,5 +379,4 @@ public class Triangle
 	{
 		return a + " " + b + " " + c + "\t" + ab + " " + bc + " " + ca;
 	}
-	
 }

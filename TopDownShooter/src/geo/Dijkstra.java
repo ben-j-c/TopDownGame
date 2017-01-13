@@ -74,6 +74,10 @@ public final class Dijkstra
 		
 		public void addEdge(Vector a, Vector b)
 		{
+			
+			nodes.add(a);
+			nodes.add(b);
+			
 			edges.add(new Edge(a,b));
 		}
 		/**
@@ -93,7 +97,6 @@ public final class Dijkstra
 		public void addNode(Vector node)
 		{
 			nodes.add(node);
-			
 		}
 		
 		@Override
@@ -105,8 +108,7 @@ public final class Dijkstra
 	}
 	public static class Edge implements Comparable<Edge>
 	{
-		public Vector a;
-		public Vector	b;
+		public Vector a, b;
 		
 		public Edge(Vector a, Vector b)
 		{
@@ -123,11 +125,11 @@ public final class Dijkstra
 			else
 				return null;
 		}
-
+		
 		@Override
 		public int compareTo(Edge e)
 		{
-			if(e == this)
+			if(e == this || (a.equals(e.a) && b.equals(e.b)) || (a.equals(e.b) && b.equals(e.a)))
 				return 0;
 			else if(e.a.sub(b).magsqr() < a.sub(b).magsqr())
 				return -1;
