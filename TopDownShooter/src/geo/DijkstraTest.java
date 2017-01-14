@@ -59,7 +59,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 			start = new Vector(e.getX(), e.getY());
 			for(Vector v : desc.getNodes())
 			{
-				if(start.skew(v) < size/2)
+				if(start.skew(v) < size)
 					start = v;
 			}
 		}
@@ -68,7 +68,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 			buffer[0] = new Vector(e.getX(), e.getY());
 			for(Vector v : desc.getNodes())
 			{
-				if(buffer[0].skew(v) < size/2)
+				if(buffer[0].skew(v) < size)
 					buffer[0] = v;
 			}
 			
@@ -86,7 +86,7 @@ public class DijkstraTest extends JPanel implements MouseListener
 			end = new Vector(e.getX(), e.getY());
 			for(Vector v : desc.getNodes())
 			{
-				if(end.skew(v) < size/2)
+				if(end.skew(v) < size)
 					end = v;
 			}
 			path = Dijkstra.getShortestPath(start, end, desc);
@@ -99,11 +99,11 @@ public class DijkstraTest extends JPanel implements MouseListener
 			buffer[1] = new Vector(e.getX(), e.getY());
 			for(Vector v : desc.getNodes())
 			{
-				if(buffer[1].skew(v) < size/2)
+				if(buffer[1].skew(v) < size)
 					buffer[1] = v;
 			}
 			
-			if(buffer[1] != buffer[0]  && buffer[0].skew(buffer[1]) > size/2)
+			if(buffer[1] != buffer[0]  && buffer[0].skew(buffer[1]) > size)
 			{
 				desc.getNodes().add(buffer[1]);
 				desc.getNodes().add(buffer[0]);
