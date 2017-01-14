@@ -26,7 +26,7 @@ import com.jogamp.opengl.util.FPSAnimator;
 
 /**
  * 
- * @author Ben
+ * @author Benjamin Correia
  * 
  * A class describing a generic entity
  * It contains data describing:
@@ -494,12 +494,12 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			{
 				case MouseEvent.BUTTON1:
 				{
-					keys.MOUSE_LEFT = true;
+					keys.MOUSE_LEFT = false;
 					break;
 				}
 				case MouseEvent.BUTTON2:
 				{
-					keys.MOUSE_RIGHT = true;
+					keys.MOUSE_RIGHT = false;
 					break;
 				}
 				case MouseEvent.BUTTON3:
@@ -528,6 +528,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 			if(e.getKeyChar() == 'm')
 			{
+				points.clear();
 				gameMap.opendialog();
 			}
 		}
