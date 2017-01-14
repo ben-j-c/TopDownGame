@@ -158,7 +158,7 @@ public final class Dijkstra
 	
 	
 	/**
-	 * 
+	 * A (horrid) implementation of Dijkstra's shortest path algorithm with an alteration to use Vectors as nodes, and the distances between them to be the distances. 
 	 * @param start the point of the first node
 	 * @param end the point of the last node
 	 * @param desc a description of a graph

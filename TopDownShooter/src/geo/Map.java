@@ -28,7 +28,7 @@ public class Map
 		
 	}
 	
-	public Map(File directory)
+	private Map(File directory)
 	{
 		try
 		{
@@ -64,12 +64,20 @@ public class Map
 		}
 	}
 	
+	/**
+	 * Open a dialog to either load a new map or save the current state of this one
+	 */
 	public void opendialog()
 	{
 		MapDialog dialog = new MapDialog(this);
 	}
 	
-	public void loadDesc(File descFile) throws Exception
+	/**
+	 * Load the description file for this map
+	 * @param descFile
+	 * @throws Exception
+	 */
+	private void loadDesc(File descFile) throws Exception
 	{	
 		desc = new Dijkstra.Description();
 		
@@ -97,7 +105,7 @@ public class Map
 		s.close();
 	}
 	
-	public void loadGeo(File geoFile) throws Exception
+	private void loadGeo(File geoFile) throws Exception
 	{
 		geo.clear();
 		
@@ -125,7 +133,7 @@ public class Map
 		s.close();
 	}
 	
-	public void saveGeo(File file) throws IOException
+	private void saveGeo(File file) throws IOException
 	{
 		if(file.exists())
 		{
@@ -146,7 +154,7 @@ public class Map
 		ps.close();
 	}
 	
-	public void saveDesc(File file) throws IOException
+	private void saveDesc(File file) throws IOException
 	{
 		if(file.exists())
 		{
@@ -167,7 +175,7 @@ public class Map
 		ps.close();
 	}
 	
-	class MapDialog implements ActionListener
+	private class MapDialog implements ActionListener
 	{
 		JTextField tfMapname;
 		Map handler;
