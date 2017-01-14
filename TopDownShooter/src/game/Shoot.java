@@ -1,6 +1,7 @@
 package game;
 
 import geo.Dijkstra;
+import geo.Map;
 import geo.Triangle;
 import geo.Triangle.BlockingVector;
 import geo.Vector;
@@ -89,10 +90,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	private GLCanvas canvas;
 	Thread runningGame;
 	
+	private Map gameMap = new Map();
 	private ArrayList<Vector> points = new ArrayList<Vector>();
-	private Dijkstra.Description desc = new Dijkstra.Description();
 	private Dijkstra.Description descWithPlayer = new Dijkstra.Description();
-	private ArrayList<Triangle> triangles = new ArrayList<Triangle>();
 	
 	public boolean GAME_STARTED = false;
 	public boolean PLACE_GRAPH = false;
@@ -130,7 +130,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	
 	public Vector insideGeometry(Vector t)
 	{	
-		for(Triangle tria : triangles)
+		for(Triangle tria : gameMap.geo)
 		{
 			Vector at = t.sub(tria.a);
 			Vector bt = t.sub(tria.b);
@@ -198,7 +198,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			gl.glBegin(GL2.GL_TRIANGLES);
 			
 			
-			for(Triangle t : triangles)
+			for(Triangle t : gameMap.geo)
 			{
 				gl.glVertex2d(t.a.x, t.a.y);
 				gl.glVertex2d(t.b.x, t.b.y);
@@ -209,7 +209,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			gl.glBegin(gl.GL_LINES);
 			
-			for(Triangle t : triangles)
+			for(Triangle t : gameMap.geo)
 			{
 				gl.glVertex2d(t.a.x, t.a.y);
 				gl.glVertex2d(t.b.x, t.b.y);
@@ -286,7 +286,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glBegin(GL.GL_LINES);
 		gl.glColor3d(0.5, 0.5, 0.5);
-		for(Dijkstra.Edge e : desc.getEdges())
+		for(Dijkstra.Edge e : gameMap.desc.getEdges())
 		{
 			gl.glVertex2d(e.a.x, e.a.y);
 			gl.glVertex2d(e.b.x, e.b.y);
@@ -295,7 +295,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glBegin(GL.GL_POINTS);
 		gl.glColor3d(0.5, 0, 1);
-		for(Vector v : desc.getNodes())
+		for(Vector v : gameMap.desc.getNodes())
 		{
 			gl.glVertex2d(v.x, v.y);
 		}
@@ -411,21 +411,21 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
 				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
 				
-				Vector temp2 = desc.getSkewed(temp, 0.05*0.05);
+				Vector temp2 = gameMap.desc.getSkewed(temp, 0.05*0.05);
 				if(temp2 == null)
 				{
 					points.add(temp);
-					desc.addNode(temp);
+					gameMap.desc.addNode(temp);
 				}
 				else
 				{
 					points.add(temp2);
-					desc.addNode(temp2);
+					gameMap.desc.addNode(temp2);
 				}
 				
 				if(points.size() == 2)
 				{
-					desc.addEdge(points.remove(0), points.remove(0));
+					gameMap.desc.addEdge(points.remove(0), points.remove(0));
 					points.clear();
 				}
 			}
@@ -435,7 +435,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
 				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
 				
-				for(Triangle t: triangles)
+				for(Triangle t: gameMap.geo)
 				{
 					Vector temp1 = t.skew(temp, 0.05);
 					if(temp1 != null)
@@ -451,7 +451,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				{
 					int size = points.size();
 					Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
-					triangles.add(t);
+					gameMap.geo.add(t);
 				}
 			}
 		}
@@ -525,6 +525,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				PLACE_GRAPH = !PLACE_GRAPH;
 				
 				points.clear();
+			}
+			if(e.getKeyChar() == 'm')
+			{
+				gameMap.opendialog();
 			}
 		}
 		
@@ -676,12 +680,12 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				}
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////SET PLAYER POS/////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				Vector nl = player.pos.add(player.v);
 				
-				BlockingVector block = Triangle.calcIntersect(player.pos, nl, triangles);
+				BlockingVector block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);
 				if(block.block == null || block.t > 1)
 				{
 					player.pos.addset(player.v);
@@ -692,18 +696,24 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 					do
 					{
 						nl = player.pos.add(nl.sub(player.pos).projectOnto(block.block));
-						block = Triangle.calcIntersect(player.pos, nl, triangles);				
+						block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);				
 					}while(block.block != null && block.t < 1);
 					player.pos.set(nl);
 				}
+				
+			}
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////SET GRAPH WITH PLAYER//////////////////////////////////////////////////////////////////////////////////////
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			{
 				
 				ArrayList<Vector> extraNodes = new ArrayList<Vector>();
 				ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
 				extraNodes.add(player.pos);
 				
-				for(Vector v: desc.getNodes())
+				for(Vector v: gameMap.desc.getNodes())
 				{
-					BlockingVector canSee = Triangle.calcIntersect(player.pos, v, triangles);
+					BlockingVector canSee = Triangle.calcIntersect(player.pos, v, gameMap.geo);
 					
 					if(canSee.block == null || canSee.t >= 1)
 					{
@@ -711,10 +721,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 					}
 				}
 				
-				descWithPlayer = new Dijkstra.Description(desc, extraNodes, extraEdges);
+				descWithPlayer = new Dijkstra.Description(gameMap.desc, extraNodes, extraEdges);
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////MOVE ENTITIES CLOSER TO PLAYER/////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				ArrayList<Entity> toRemove = new ArrayList<Entity>();
@@ -754,7 +764,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 						}
 						
 						nl = e.pos.add(nv.unit().scale(0.002));
-						BlockingVector block = Triangle.calcIntersect(e.pos, nl, triangles);
+						BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
 						
 						if(block.block == null || block.t > 1)
 						{
@@ -765,7 +775,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 							do
 							{
 								nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
-								block = Triangle.calcIntersect(e.pos, nl, triangles);				
+								block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);				
 							}while(block.block != null && block.t < 1);
 							
 							e.pos.set(nl);
@@ -777,7 +787,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				ents.removeAll(toRemove);
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////DEAL DAMAGE TO MONSTERS////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				int size = ents.size();
@@ -790,7 +800,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 						
 						
 						Vector nl = e.pos.add(e.v);
-						double t = Triangle.calcIntersect(e.pos, nl, triangles).t;
+						double t = Triangle.calcIntersect(e.pos, nl, gameMap.geo).t;
 						
 						if(t > 1)
 						{
@@ -823,7 +833,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	{
 		Vector pos = player.pos;
 		
-		BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, triangles);
+		BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
 		
 		if(bv.block != null && bv.t <= 1)
 		{
@@ -832,9 +842,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
 			extraNodes.add(e.pos);
 			
-			for(Vector v: desc.getNodes())
+			for(Vector v: gameMap.desc.getNodes())
 			{
-				BlockingVector canSee = Triangle.calcIntersect(e.pos, v, triangles);
+				BlockingVector canSee = Triangle.calcIntersect(e.pos, v, gameMap.geo);
 				
 				if(canSee.block == null || canSee.t >= 1)
 				{
@@ -868,7 +878,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			temp.pos.set(player.pos);
 			temp.v.set((2*x - canvas.getWidth())/canvas.getWidth(), -(2*y - canvas.getHeight())/canvas.getHeight()); //for laser, the velocity is actually just another point
-			double t = Triangle.calcIntersect(temp.pos, temp.v, triangles).t; // find the closest intersection of pos -> v
+			double t = Triangle.calcIntersect(temp.pos, temp.v, gameMap.geo).t; // find the closest intersection of pos -> v
 			temp.v.set(temp.pos.add(temp.v.sub(temp.pos).scale(t))); //v := (v-pos)*t + pos
 			
 			ArrayList<Entity> to_remove = new ArrayList<Entity>();

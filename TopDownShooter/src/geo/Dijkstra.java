@@ -32,11 +32,23 @@ public final class Dijkstra
 		 */
 		public Description(Description d, java.util.ArrayList<Vector> nodes, java.util.ArrayList<Edge> edges)
 		{
-			this.nodes.addAll(d.getNodes());
-			this.nodes.addAll(nodes);
+			for(Vector v : d.nodes)
+			{
+				this.nodes.add(v);
+			}
+			for(Vector v : nodes)
+			{
+				this.nodes.add(v);
+			}
 			
-			this.edges.addAll(d.getEdges());
-			this.edges.addAll(edges);
+			for(Edge e : d.edges)
+			{
+				this.edges.add(e);
+			}
+			for(Edge e : edges)
+			{
+				this.edges.add(e);
+			}
 		}
 		/**
 		 * 
@@ -118,9 +130,9 @@ public final class Dijkstra
 		
 		public Vector getOther(Vector v)
 		{
-			if(a == v)
+			if(a.equals(v))
 				return b;
-			else if(b == v)
+			else if(b.equals(v))
 				return a;
 			else
 				return null;
@@ -158,8 +170,8 @@ public final class Dijkstra
 		
 		nodes.addAll(desc.getNodes());
 		java.util.ArrayList<Vector> path = new java.util.ArrayList<Vector>();
-		java.util.HashMap<Vector, Double> dist = new java.util.HashMap<Vector, Double>();
-		java.util.HashMap<Vector, Vector> prev = new java.util.HashMap<Vector, Vector>();
+		java.util.TreeMap<Vector, Double> dist = new java.util.TreeMap<Vector, Double>();
+		java.util.TreeMap<Vector, Vector> prev = new java.util.TreeMap<Vector, Vector>();
 		for(Vector v : nodes)
 		{
 			dist.put(v, 1234567890.0);
@@ -191,14 +203,16 @@ public final class Dijkstra
 			for(Vector v : neighbor)
 			{
 				double alt = dist.get(u) + v.skew(u);
+				Double distMapped = dist.get(v);
 				
-				if(alt < dist.get(v))
+				if(alt < distMapped)
 				{
 					dist.put(v, alt);
 					prev.put(v, u);
 				}
 				
 			}
+			
 		}
 		
 		Vector next = end;

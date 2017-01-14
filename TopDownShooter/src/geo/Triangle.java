@@ -1,7 +1,5 @@
 package geo;
-import java.util.List;
-
-
+import java.util.Collection;
 
 
 /**
@@ -9,7 +7,7 @@ import java.util.List;
  * @author Ben
  *
  */
-public class Triangle 
+public class Triangle implements Comparable<Triangle>
 {
 	
 	public static class BlockingVector
@@ -329,7 +327,7 @@ public class Triangle
 	 * @param geo Map geometry
 	 * @return The lowest percentage from a to b that intersects with geo
 	 */
-	public static double calcIntersectJustT(Vector la , Vector lb, List<Triangle> geo)
+	public static double calcIntersectJustT(Vector la , Vector lb, Collection<Triangle> geo)
 	{
 		
 		double lowt = 1337.69;
@@ -352,7 +350,7 @@ public class Triangle
 	 * @param geo
 	 * @return A object describing a vector blocking a line from a to b
 	 */
-	public static BlockingVector calcIntersect(Vector la , Vector lb, List<Triangle> geo)
+	public static BlockingVector calcIntersect(Vector la , Vector lb, Collection<Triangle> geo)
 	{
 		
 		BlockingVector lowt = new BlockingVector();
@@ -378,5 +376,15 @@ public class Triangle
 	public String toString()
 	{
 		return a + " " + b + " " + c;
+	}
+	@Override
+	public int compareTo(Triangle t)
+	{
+		if(a.equals(t.a) && b.equals(t.b) && c.equals(t.c))
+			return 0;
+		else if(a.x + b.x + c.x < t.a.x + t.b.x + t.c.x)
+			return -1;
+		else
+			return 1;
 	}
 }

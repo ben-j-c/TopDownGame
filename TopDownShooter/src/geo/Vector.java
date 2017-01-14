@@ -138,7 +138,7 @@ public class Vector implements Comparable<Vector>
 	@Override
 	public int compareTo(Vector o)
 	{
-		if(this == o || this.x == o.x && this.y == o.y)
+		if(this == o || (this.x == o.x && this.y == o.y))
 			return 0;
 		else if(this.x < o.x)
 			return -1;
@@ -149,9 +149,8 @@ public class Vector implements Comparable<Vector>
 	@Override
 	public boolean equals(Object o)
 	{
-		
 		Vector v = (Vector) o;
-		if(this == o || this.x == v.x && this.y == v.y)
+		if(this == v || (this.x == v.x && this.y == v.y))
 			return true;
 		else
 			return false;

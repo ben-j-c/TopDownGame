@@ -13,14 +13,15 @@ import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class Map
 {
-	private TreeSet<Triangle> geo = new TreeSet<Triangle>();
-	private Dijkstra.Description desc = new Dijkstra.Description();
+	public TreeSet<Triangle> geo = new TreeSet<Triangle>();
+	public Dijkstra.Description desc = new Dijkstra.Description();
 	
 	public Map()
 	{
@@ -69,7 +70,9 @@ public class Map
 	}
 	
 	public void loadDesc(File descFile) throws Exception
-	{
+	{	
+		desc = new Dijkstra.Description();
+		
 		Scanner s = new Scanner(descFile);
 		s.useDelimiter("[^-?\\d\\.?\\d*]+");
 		
@@ -96,6 +99,8 @@ public class Map
 	
 	public void loadGeo(File geoFile) throws Exception
 	{
+		geo.clear();
+		
 		Scanner s = new Scanner(geoFile);
 		s.useDelimiter("[^-?\\d\\.?\\d*]+");
 		
@@ -122,7 +127,16 @@ public class Map
 	
 	public void saveGeo(File file) throws IOException
 	{
-		file.delete();
+		if(file.exists())
+		{
+			file.delete();
+		}
+		else
+		{
+			file.mkdirs();
+			file.delete();
+		}
+		
 		file.createNewFile();
 		PrintStream ps = new PrintStream(file);
 		for(Triangle t: geo)
@@ -131,10 +145,19 @@ public class Map
 		}
 		ps.close();
 	}
-
+	
 	public void saveDesc(File file) throws IOException
 	{
-		file.delete();
+		if(file.exists())
+		{
+			file.delete();
+		}
+		else
+		{
+			file.mkdirs();
+			file.delete();
+		}
+		
 		file.createNewFile();
 		PrintStream ps = new PrintStream(file);
 		for(Dijkstra.Edge e: desc.getEdges())
@@ -156,17 +179,18 @@ public class Map
 		{
 			this.handler = handler;
 			
+			JFrame frame;
 			JPanel pnHolder;
 			JLabel lbInfo;
 			JButton btBut0;
 			JButton btBut4;
-
+			
 			pnHolder = new JPanel();
 			pnHolder.setBorder( BorderFactory.createTitledBorder( "Map Tools" ) );
 			GridBagLayout gbHolder = new GridBagLayout();
 			GridBagConstraints gbcHolder = new GridBagConstraints();
 			pnHolder.setLayout( gbHolder );
-
+			
 			tfMapname = new JTextField( );
 			gbcHolder.gridx = 7;
 			gbcHolder.gridy = 7;
@@ -178,7 +202,7 @@ public class Map
 			gbcHolder.anchor = GridBagConstraints.CENTER;
 			gbHolder.setConstraints( tfMapname, gbcHolder );
 			pnHolder.add( tfMapname );
-
+			
 			lbInfo = new JLabel( "Map name:"  );
 			gbcHolder.gridx = 7;
 			gbcHolder.gridy = 6;
@@ -190,7 +214,7 @@ public class Map
 			gbcHolder.anchor = GridBagConstraints.NORTH;
 			gbHolder.setConstraints( lbInfo, gbcHolder );
 			pnHolder.add( lbInfo );
-
+			
 			btBut0 = new JButton( "Load"  );
 			btBut0.setActionCommand( "Load" );
 			gbcHolder.gridx = 7;
@@ -204,7 +228,7 @@ public class Map
 			gbHolder.setConstraints( btBut0, gbcHolder );
 			pnHolder.add( btBut0 );
 			btBut0.addActionListener(this);
-
+			
 			btBut4 = new JButton( "Save"  );
 			btBut4.setActionCommand( "Save" );
 			gbcHolder.gridx = 7;
@@ -218,6 +242,12 @@ public class Map
 			gbHolder.setConstraints( btBut4, gbcHolder );
 			pnHolder.add( btBut4 );
 			btBut4.addActionListener(this);
+			
+			frame = new JFrame("Map dialog");
+			frame.add(pnHolder);
+			frame.setVisible(true);
+			frame.pack();
+			frame.toFront();
 		}
 		
 		@Override
@@ -227,8 +257,8 @@ public class Map
 			{
 				try
 				{
-					handler.loadDesc(new File("Maps//" + tfMapname.getText() + "desc" ));
-					handler.loadGeo(new File("Maps//" + tfMapname.getText() + "geo" ));
+					handler.loadDesc(new File("Maps//" + tfMapname.getText() + "//" + "desc" ));
+					handler.loadGeo(new File("Maps//" + tfMapname.getText() + "//" + "geo" ));
 				}
 				catch (Exception e1)
 				{
@@ -240,8 +270,8 @@ public class Map
 			{
 				try
 				{
-					handler.saveDesc(new File("Maps//" + tfMapname.getText() + "desc" ));
-					handler.saveGeo(new File("Maps//" + tfMapname.getText() + "geo" ));
+					handler.saveDesc(new File("Maps//" + tfMapname.getText() + "//" + "desc" ));
+					handler.saveGeo(new File("Maps//" + tfMapname.getText() + "//" + "geo" ));
 				}
 				catch (Exception e1)
 				{
