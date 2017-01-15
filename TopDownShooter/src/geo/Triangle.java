@@ -169,6 +169,11 @@ public class Triangle implements Comparable<Triangle>
 		}
 	}
 	
+	public boolean isFlat()
+	{
+		return a.equals(b) || a.equals(c) || b.equals(c);
+	}
+	
 	public double area()
 	{
 		if(c == null)

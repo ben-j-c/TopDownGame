@@ -127,7 +127,11 @@ public class Map
 				}
 			}
 			
-			this.geo.add(new Triangle(temp[0], temp[1], temp[2]));
+			Triangle toAdd = new Triangle(temp[0], temp[1], temp[2]);
+			if(!toAdd.isFlat())
+			{
+				this.geo.add(toAdd);
+			}
 		}
 		
 		s.close();
