@@ -104,6 +104,8 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	
 	boolean weapon = false;
 	
+	public static final double SNAP_DISTANCE = 0.025;
+	
 	
 	Shoot()
 	{
@@ -399,12 +401,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		{
 			if(PLACE_GRAPH)
 			{
-				Vector temp = new Vector();
-				temp.x = (double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
-				temp.y = (double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
-				temp.addset(offset);
+				Vector temp = translateToReal(e.getX(), e.getY());
 				
-				Vector temp2 = gameMap.desc.getSkewed(temp, 0.05*0.05);
+				Vector temp2 = gameMap.desc.getSkewed(temp, SNAP_DISTANCE*SNAP_DISTANCE);
 				if(temp2 == null)
 				{
 					points.add(temp);
@@ -424,14 +423,11 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 			else
 			{
-				Vector temp = new Vector();
-				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0 ;
-				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
-				temp.addset(offset);
+				Vector temp = translateToReal(e.getX(), e.getY());
 				
 				for(Triangle t: gameMap.geo)
 				{
-					Vector temp1 = t.skew(temp, 0.05);
+					Vector temp1 = t.skew(temp, SNAP_DISTANCE);
 					if(temp1 != null)
 					{
 						temp = temp1;
@@ -445,7 +441,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				{
 					int size = points.size();
 					Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
-					gameMap.geo.add(t);
+					if(!t.isFlat())
+					{
+						gameMap.geo.add(t);
+					}
 				}
 			}
 		}
@@ -509,10 +508,18 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		if(!GAME_STARTED)
 		{
 			if(e.getKeyChar() == 'l')
-			{
+			{	
 				ents = new ArrayList<Entity>();
 				player = new Entity(Entity.BODY);
 				offset = new Vector(0,0);
+				
+				
+				
+				do 
+				{
+					player.pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
+				}while(insideGeometry(player.pos) != null);
+						
 				GAME_STARTED = true;
 			}
 			else if(e.getKeyChar() == 'k')
@@ -882,7 +889,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			Entity temp = new Entity(Entity.LASER);
 			
 			temp.pos.set(player.pos);
-			temp.v.set((2*x - canvas.getWidth())/canvas.getWidth() + player.pos.x, -(2*y - canvas.getHeight())/canvas.getHeight() + player.pos.y); //for laser, the velocity is actually just another point
+			temp.v.set(translateToReal(x, y));//(2*x - canvas.getWidth())/canvas.getWidth() + player.pos.x, -(2*y - canvas.getHeight())/canvas.getHeight() + player.pos.y); //for laser, the velocity is actually just another point
 			double t = Triangle.calcIntersect(temp.pos, temp.v, gameMap.geo).t; // find the closest intersection of pos -> v
 			temp.v.set(temp.pos.add(temp.v.sub(temp.pos).scale(t))); //v := (v-pos)*t + pos
 			
@@ -909,8 +916,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		else	
 		{
 			Entity temp = new Entity(Entity.PROJECTILE);
-			temp.v.set(2*(x)/(double)canvas.getWidth() - 1.0,
-					(2*((canvas.getHeight() - y))/(double)canvas.getHeight()) - 1.0);
+			temp.v.set(translateToReal(x,y).sub(player.pos));
 			temp.v.unitize();
 			temp.v.scaleset(0.01);
 			temp.pos.set(player.pos);
@@ -928,5 +934,22 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				count++;
 		}
 		return count;
+	}
+	
+	
+	/**
+	 * Translates screen space to game space.  
+	 * 
+	 * An example of a use would be to translate where a user clicked to where its position is in game
+	 * @param x the x-coordinate of for example the cursor
+	 * @param y the y-coordinate of for example the cursor
+	 * @return the equivalent position in game space
+	 */
+	public Vector translateToReal(double x, double y)
+	{
+		return new Vector(
+				(2*x - canvas.getWidth())/canvas.getWidth(),
+				(2*(canvas.getHeight() - y) - canvas.getHeight())/canvas.getHeight()
+				).add(player.pos).add(offset);
 	}
 }
