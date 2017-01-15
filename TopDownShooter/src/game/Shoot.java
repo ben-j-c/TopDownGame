@@ -105,6 +105,8 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	boolean weapon = false;
 	
 	public static final double SNAP_DISTANCE = 0.025;
+	public static final double PLAYER_SPEED = 0.005;
+	public static final double PARTICLE_SPEED = 0.02;
 	
 	
 	Shoot()
@@ -124,7 +126,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		canvas.addKeyListener(this);
 		this.addKeyListener(this);
 		
-		animator = new FPSAnimator(canvas, 100);
+		animator = new FPSAnimator(canvas, 50);
 		
 	}
 	public void start()
@@ -334,8 +336,8 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				
 				gl.glBegin(GL2.GL_POINTS);
 				gl.glColor3d(Math.random(), Math.random(), Math.random());
-				gl.glVertex2d((2*(double)pos.getX() - (double) canvas.getSize().getWidth())/(double)canvas.getSize().getWidth(),
-						-(2*(double)pos.getY() - (double)canvas.getSize().getHeight())/(double)canvas.getSize().getHeight());
+				Vector pos2 = translateToReal(pos.x, pos.y);
+				gl.glVertex2d(pos.x, pos.y);
 				gl.glEnd();
 			}
 		}
@@ -519,7 +521,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				{
 					player.pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
 				}while(insideGeometry(player.pos) != null);
-						
+				
 				GAME_STARTED = true;
 			}
 			else if(e.getKeyChar() == 'k')
@@ -532,6 +534,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			{
 				points.clear();
 				gameMap.opendialog();
+				offset = new Vector(0,0);
 			}
 			else if(e.getKeyChar() == 'w')
 				offset.addset(new Vector(0,1));
@@ -586,38 +589,37 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
-		if(GAME_STARTED)
+		
+		char key = e.getKeyChar();
+		
+		switch (key)
 		{
-			char key = e.getKeyChar();
-			
-			switch (key)
+			case 'w':
 			{
-				case 'w':
-				{
-					keys.UP = false;
-					break;
-				}
-				case 's':
-				{
-					keys.DOWN = false;
-					break;
-				}
-				case 'a':
-				{
-					keys.LEFT = false;
-					break;
-				}
-				case 'd':
-				{
-					keys.RIGHT = false;
-					break;
-				}
-				default:
-				{
-					break;
-				}
+				keys.UP = false;
+				break;
+			}
+			case 's':
+			{
+				keys.DOWN = false;
+				break;
+			}
+			case 'a':
+			{
+				keys.LEFT = false;
+				break;
+			}
+			case 'd':
+			{
+				keys.RIGHT = false;
+				break;
+			}
+			default:
+			{
+				break;
 			}
 		}
+		
 		
 	}
 	@Override
@@ -649,7 +651,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				player.v.x += -1;
 			}
 			player.v.unitize();
-			player.v.scaleset(0.0025);
+			player.v.scaleset(PLAYER_SPEED);
 			
 			for(Entity e : ents)
 			{
@@ -748,7 +750,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 					if((e.TYPE & Entity.BODY) == Entity.BODY)
 					{
 						e.v = headTo.sub(e.pos).unitize();
-						e.v.scaleset(0.002);
+						e.v.scaleset(PLAYER_SPEED*0.9);
 						
 						Vector nl = e.pos.add(e.v);
 						
@@ -769,13 +771,13 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 									
 									Vector dir = nl.sub(f.pos);
 									
-									nv.addset((dir.scale(0.5/(skew*skew))).scale(0.002));
+									nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*0.9));
 								}
 								
 							}
 						}
 						
-						nl = e.pos.add(nv.unit().scale(0.002));
+						nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*0.9));
 						BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
 						
 						if(block.block == null || block.t > 1)
