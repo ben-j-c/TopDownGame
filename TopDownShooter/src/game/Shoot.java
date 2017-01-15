@@ -129,7 +129,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		animator = new FPSAnimator(canvas, 50);
 		
 	}
-	public void start()
+	public void startGame()
 	{
 		animator.start();
 	}
@@ -373,14 +373,18 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////START OF GAME LOGIC//////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////MAIN FUNCTION////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public static void main(String[] args)
 	{
 		Shoot shoot = new Shoot();
-		shoot.start();
+		shoot.startGame();
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////GAME LOGIC///////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
@@ -727,9 +731,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				
 				for(Vector v: gameMap.desc.getNodes())
 				{
-					BlockingVector canSee = Triangle.calcIntersect(player.pos, v, gameMap.geo);
+					boolean canSee = Triangle.clearline(player.pos, v, gameMap.geo);
 					
-					if(canSee.block == null || canSee.t >= 1)
+					if(canSee)
 					{
 						extraEdges.add(new Dijkstra.Edge(player.pos, v));
 					}
@@ -847,9 +851,11 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	{
 		Vector pos = player.pos;
 		
-		BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
+		//BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
 		
-		if(bv.block != null && bv.t <= 1)
+		boolean canSee = Triangle.clearline(e.pos, pos, gameMap.geo);
+		
+		if(!canSee)
 		{
 			
 			ArrayList<Vector> extraNodes = new ArrayList<Vector>();
@@ -858,9 +864,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			for(Vector v: gameMap.desc.getNodes())
 			{
-				BlockingVector canSee = Triangle.calcIntersect(e.pos, v, gameMap.geo);
+				canSee = Triangle.clearline(e.pos, v, gameMap.geo);
 				
-				if(canSee.block == null || canSee.t >= 1)
+				if(canSee)
 				{
 					extraEdges.add(new Dijkstra.Edge(e.pos, v));
 				}

@@ -1,5 +1,6 @@
 package geo;
 import java.util.Collection;
+import java.util.TreeSet;
 
 
 /**
@@ -313,6 +314,57 @@ public class Triangle implements Comparable<Triangle>
 	}
 	
 	/**
+	 * Checks if the line intersects this triangle
+	 * @param la point A on the line AB
+	 * @param lb point B on the line AB
+	 * @return true if the line intersects with the edges of this triangle in between A and B
+	 */
+	public boolean isIntersecting(Vector la, Vector lb)
+	{
+		if(!correct_edges)
+			edgeCalc();
+		
+		{
+			//t = (abXa-abXla)/abXlalb
+			
+			double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
+			
+			Vector r = la.add(lb.sub(la).scale(t));
+			
+			if( t > 0 && t < 1 && contains(r, 0.00005))
+			{
+				return true;
+			}
+		}
+		{
+			//t = (abXa-abXla)/abXlalb
+			
+			double t = (bc.cross(b)-bc.cross(la))/bc.cross(lb.sub(la));
+			
+			Vector r = la.add(lb.sub(la).scale(t));
+			
+			if( t > 0 && t < 1 && contains(r, 0.00005))
+			{
+				return true;
+			}
+		}
+		{
+			//t = (abXa-abXla)/abXlalb
+			
+			double t = (ca.cross(c)-ca.cross(la))/ca.cross(lb.sub(la));
+			
+			Vector r = la.add(lb.sub(la).scale(t));
+			
+			if( t > 0 && t < 1 && contains(r, 0.00005))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * @param v point
 	 * @return The closest distance from the point to each vertex
 	 */
@@ -391,5 +443,18 @@ public class Triangle implements Comparable<Triangle>
 			return -1;
 		else
 			return 1;
+	}
+	
+	public static boolean clearline(Vector pos, Vector v, TreeSet<Triangle> geo)
+	{
+		for(Triangle t: geo)
+		{
+			if(t.isIntersecting(pos, v))
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 }
