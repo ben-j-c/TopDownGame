@@ -177,22 +177,14 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		gl.glLoadIdentity();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		
-		gl.glBegin(GL2.GL_QUADS);
-		gl.glColor3d(0,0,0);
+		gl.glPushMatrix();
 		
-		gl.glVertex2d(-1, 1);
-		gl.glVertex2d(-1, -1);
-		gl.glVertex2d(1, -1);
-		gl.glVertex2d(1, 1);
+		gl.glTranslated(-player.pos.x, -player.pos.y, 0);
 		
-		gl.glEnd();
-		gl.glColor3d(1,1,1);
-		/*gl.glBegin(gl.GL_POINTS);
-		for(Vector v: points)
-		{
-			gl.glVertex2d(v.x, v.y);
-		}
-		gl.glEnd();*/
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////DRAW THE MAP GEOMETRY////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		{
 			gl.glColor3d(0.75,0.75,0.75);
 			gl.glBegin(GL2.GL_TRIANGLES);
@@ -222,6 +214,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			gl.glEnd();
 		}
 		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////DRAW THE ENTITIES AND PLAYER/////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if(GAME_STARTED)
 		{
 			//gl.glColor3d(1, 0, 0);
@@ -265,22 +260,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		}
 		
 		
-		if(canvas.getMousePosition() != null)
-		{
-			java.awt.Point pos = canvas.getMousePosition();
-			
-			gl.glBegin(gl.GL_POINTS);
-			gl.glColor3d(Math.random(), Math.random(), Math.random());
-			gl.glVertex2d((2*(double)pos.getX() - (double) canvas.getSize().getWidth())/(double)canvas.getSize().getWidth(),
-					-(2*(double)pos.getY() - (double)canvas.getSize().getHeight())/(double)canvas.getSize().getHeight());
-			gl.glEnd();
-		}
-		
-		
-		
-		/*
-		 * Draw the graph
-		 */
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////DRAW THE GRAPH///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		
 		
@@ -322,7 +304,11 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glLineWidth(2.0f);
 		
+		gl.glPopMatrix();
 		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////DRAW PLAYER SPECIFIC INFO////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		gl.glBegin(GL2.GL_QUADS);
 		
@@ -336,16 +322,20 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glEnd();
 		
-		/*
-		gl.glColor4d(1,0,0,0.5);
-		gl.glBegin(GL.GL_TRIANGLES);
+		{
+			java.awt.Point pos = canvas.getMousePosition();
+			if(pos != null)
+			{
+				
+				
+				gl.glBegin(GL2.GL_POINTS);
+				gl.glColor3d(Math.random(), Math.random(), Math.random());
+				gl.glVertex2d((2*(double)pos.getX() - (double) canvas.getSize().getWidth())/(double)canvas.getSize().getWidth(),
+						-(2*(double)pos.getY() - (double)canvas.getSize().getHeight())/(double)canvas.getSize().getHeight());
+				gl.glEnd();
+			}
+		}
 		
-		gl.glVertex2d(0, 0);
-		gl.glVertex2d(1, 1);
-		gl.glVertex2d(0, 1);
-		
-		gl.glEnd();
-		 */
 		
 	}
 	
@@ -432,7 +422,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			else
 			{
 				Vector temp = new Vector();
-				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
+				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0 ;
 				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
 				
 				for(Triangle t: gameMap.geo)
@@ -658,6 +648,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				
 				ents.clear();
 				descWithPlayer = new Dijkstra.Description();
+				player.pos.set(0,0);
 				
 				return;
 			}
@@ -878,7 +869,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			Entity temp = new Entity(Entity.LASER);
 			
 			temp.pos.set(player.pos);
-			temp.v.set((2*x - canvas.getWidth())/canvas.getWidth(), -(2*y - canvas.getHeight())/canvas.getHeight()); //for laser, the velocity is actually just another point
+			temp.v.set((2*x - canvas.getWidth())/canvas.getWidth() + player.pos.x, -(2*y - canvas.getHeight())/canvas.getHeight() + player.pos.y); //for laser, the velocity is actually just another point
 			double t = Triangle.calcIntersect(temp.pos, temp.v, gameMap.geo).t; // find the closest intersection of pos -> v
 			temp.v.set(temp.pos.add(temp.v.sub(temp.pos).scale(t))); //v := (v-pos)*t + pos
 			
@@ -905,9 +896,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		else	
 		{
 			Entity temp = new Entity(Entity.PROJECTILE);
-			temp.v.set(2*(x)/(double)canvas.getWidth() - 1.0 - player.pos.x, (2*((canvas.getHeight() - y))/(double)canvas.getHeight()) - 1.0 - player.pos.y);
+			temp.v.set(2*(x)/(double)canvas.getWidth() - 1.0,
+					(2*((canvas.getHeight() - y))/(double)canvas.getHeight()) - 1.0);
 			temp.v.unitize();
-			temp.v.scaleset(0.005);
+			temp.v.scaleset(0.01);
 			temp.pos.set(player.pos);
 			ents.add(temp);
 		}
