@@ -98,6 +98,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	public boolean PLACE_GRAPH = false;
 	public long gametime = 0 ;
 	public Entity player = new Entity(Entity.SOLID);
+	public Vector offset = new Vector(0,0);
 	private ArrayList<Entity> ents = new ArrayList<Entity>();
 	private KeyList keys = new KeyList();
 	
@@ -119,6 +120,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		canvas.addGLEventListener(this);
 		canvas.addMouseListener(this);
 		canvas.addKeyListener(this);
+		this.addKeyListener(this);
 		
 		animator = new FPSAnimator(canvas, 100);
 		
@@ -179,7 +181,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glPushMatrix();
 		
-		gl.glTranslated(-player.pos.x, -player.pos.y, 0);
+		gl.glTranslated(-(player.pos.x + offset.x), -(player.pos.y + offset.y), 0);
 		
 		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -398,8 +400,9 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			if(PLACE_GRAPH)
 			{
 				Vector temp = new Vector();
-				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
-				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
+				temp.x = (double) 2*e.getX()/ (double)canvas.getWidth() - 1.0;
+				temp.y = (double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
+				temp.addset(offset);
 				
 				Vector temp2 = gameMap.desc.getSkewed(temp, 0.05*0.05);
 				if(temp2 == null)
@@ -424,6 +427,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				Vector temp = new Vector();
 				temp.x =(double) 2*e.getX()/ (double)canvas.getWidth() - 1.0 ;
 				temp.y =(double) 2*(1 - e.getY()/(double) canvas.getHeight()) - 1.0;
+				temp.addset(offset);
 				
 				for(Triangle t: gameMap.geo)
 				{
@@ -508,6 +512,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			{
 				ents = new ArrayList<Entity>();
 				player = new Entity(Entity.BODY);
+				offset = new Vector(0,0);
 				GAME_STARTED = true;
 			}
 			else if(e.getKeyChar() == 'k')
@@ -516,11 +521,19 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				
 				points.clear();
 			}
-			if(e.getKeyChar() == 'm')
+			else if(e.getKeyChar() == 'm')
 			{
 				points.clear();
 				gameMap.opendialog();
 			}
+			else if(e.getKeyChar() == 'w')
+				offset.addset(new Vector(0,1));
+			else if(e.getKeyChar() == 's')
+				offset.addset(new Vector(0,-1));
+			else if(e.getKeyChar() == 'a')
+				offset.addset(new Vector(-1,0));
+			else if(e.getKeyChar() == 'd')
+				offset.addset(new Vector(1,0));
 		}
 		
 		char key = e.getKeyChar();
