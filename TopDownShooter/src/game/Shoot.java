@@ -11,6 +11,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -48,6 +50,7 @@ class Entity
 	
 	
 	Vector pos;
+	Vector headTo;
 	Vector v;
 	Triangle collide;
 	double life = 10;
@@ -57,7 +60,19 @@ class Entity
 		TYPE = t;
 		pos = new Vector();
 		v = new Vector();
+		headTo = new Vector();
 	}
+	
+	public Entity(Entity e)
+	{
+		pos = new Vector(e.pos);
+		v = new Vector(e.v);
+		collide = e.collide;
+		life = e.life;
+		TYPE = e.TYPE;
+	}
+	
+	
 }
 /**
  * 
@@ -80,12 +95,20 @@ final class KeyList
  * @author Ben
  * The game class includes all the rendering mouse handling
  */
-public class Shoot extends JFrame implements GLEventListener, MouseListener, KeyListener
+public class Shoot extends JFrame implements GLEventListener, MouseListener, KeyListener, Runnable
 {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	public static final double SNAP_DISTANCE = 0.025;
+	public static final double PLAYER_SPEED = 0.005;
+	public static final double PARTICLE_SPEED = 0.02;
+	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+	java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
+	public int c2 = 0;
+	
+	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	private GLCanvas canvas;
 	Thread runningGame;
@@ -99,15 +122,14 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	public long gametime = 0 ;
 	public Entity player = new Entity(Entity.SOLID);
 	public Vector offset = new Vector(0,0);
+	
 	private ArrayList<Entity> ents = new ArrayList<Entity>();
+	private ArrayList<Entity> eSwap = new ArrayList<Entity>();
+	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
+	
 	private KeyList keys = new KeyList();
 	
 	boolean weapon = false;
-	
-	public static final double SNAP_DISTANCE = 0.025;
-	public static final double PLAYER_SPEED = 0.005;
-	public static final double PARTICLE_SPEED = 0.02;
-	
 	
 	Shoot()
 	{
@@ -370,6 +392,43 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			int arg4)
 	{
 		
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////RUN FUNCTION/////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public void run()
+	{	
+		int my_count = 0;
+		while(counter.get() < ents.size())
+		{
+			Entity e = null;
+			synchronized(counter)
+			{
+				if(counter.get() < ents.size())
+				{
+					e = ents.get(my_count);
+					my_count = counter.incrementAndGet();
+				}
+				else
+				{
+					break;
+				}
+			}
+			
+			e.headTo = getNextMoveTo(e);
+		}
+		
+		
+		
+		synchronized(this)
+		{
+			if(my_count >= ents.size())
+			{
+				this.notify();
+			}
+			
+		}
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +742,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			/////////////////SPAWNING MONSTER//////////////////////////////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			if(countMonsters() < 50 && Math.random() < 0.20)
+			if(countMonsters() < 250 && Math.random() < 0.20)
 			{
 				Vector pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
 				
@@ -745,22 +804,41 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			////////////////////////////MOVE ENTITIES CLOSER TO PLAYER/////////////////////////////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
-				ArrayList<Entity> toRemove = new ArrayList<Entity>();
+				toRemove.clear();
+				counter.set(0);
+				
+				for(int i = 0 ; i < THREAD_COUNT ; i++)
+					es.execute(this);
+				
+				synchronized(this)
+				{
+					while(counter.get() < ents.size())
+					{
+						try
+						{
+							this.wait();	
+						}
+						catch (InterruptedException e1)
+						{
+							e1.printStackTrace();
+						}
+						
+					}
+					
+				}
 				
 				for(Entity e : ents)
 				{
-					Vector headTo = getNextMoveTo(e);
-					
 					if((e.TYPE & Entity.BODY) == Entity.BODY)
-					{
-						e.v = headTo.sub(e.pos).unitize();
+					{	
+						e.v = e.headTo.sub(e.pos).unitize();
 						e.v.scaleset(PLAYER_SPEED*0.9);
 						
 						Vector nl = e.pos.add(e.v);
 						
 						Vector nv = new Vector(e.v);
 						for(Entity f : ents)
-						{
+						{	
 							double skew = e.pos.skew(f.pos);
 							if(f != e && skew < 0.01)
 							{
@@ -778,8 +856,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 									nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*0.9));
 								}
 								
+								
 							}
 						}
+						
 						
 						nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*0.9));
 						BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
@@ -800,8 +880,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 						}
 						
 					}
+					
+					
+					
 				}
-				
 				ents.removeAll(toRemove);
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -846,6 +928,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 		}
 	}
+	
 	
 	private Vector getNextMoveTo(Entity e)
 	{
