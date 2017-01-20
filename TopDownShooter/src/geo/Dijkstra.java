@@ -196,6 +196,10 @@ public final class Dijkstra
 				u = lowv;
 			}
 			
+			if(u.equals(end))	
+				break;
+			
+			
 			java.util.List<Vector> neighbor = desc.getNeighbor(u);
 			
 			nodes.remove(u);
