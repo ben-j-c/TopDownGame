@@ -187,6 +187,7 @@ public final class Dijkstra
 				Vector lowv = null;
 				for(Vector temp : nodes)
 				{
+					
 					if(dist.get(temp) < low)
 					{
 						lowv = temp;
