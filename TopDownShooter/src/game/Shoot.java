@@ -48,30 +48,32 @@ final class KeyList
  * @author Ben
  * The game class includes all the rendering mouse handling
  */
-public class Shoot extends JFrame implements GLEventListener, MouseListener, KeyListener, Runnable
+public class Shoot implements MouseListener, KeyListener, Runnable
 {
 	private static final long serialVersionUID = 1L;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.005;
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
-	java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
-	java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
+	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
+	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
 	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	private GLCanvas canvas;
-	Thread runningGame;
+	private Display disp;
+	private Thread runningGame;
 	
 	private Map gameMap = new Map();
 	private ArrayList<Vector> points = new ArrayList<Vector>();
+
 	private Dijkstra.Description descWithPlayer = new Dijkstra.Description();
 	
-	public boolean GAME_STARTED = false;
-	public boolean PLACE_GRAPH = false;
-	public long gametime = 0 ;
-	public Entity player = new Entity(Entity.SOLID);
-	public Vector offset = new Vector(0,0);
+	private boolean GAME_STARTED = false;
+	private boolean PLACE_GRAPH = false;
+	private long gametime = 0;
+	private Entity player = new Entity(Entity.SOLID);
+	private Vector offset = new Vector(0,0);
 	
 	private ArrayList<Entity> ents = new ArrayList<Entity>();
 	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
@@ -85,20 +87,38 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
+		
 		canvas = new GLCanvas(caps);
 		canvas.setSize(1000, 1000);
-		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(1000,1000);
-		add(canvas);
-		setVisible(true);
-		canvas.addGLEventListener(this);
 		canvas.addMouseListener(this);
 		canvas.addKeyListener(this);
-		this.addKeyListener(this);
 		
+		disp = new Display(this);
+		disp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		disp.setSize(1000,1000);
+		disp.add(canvas);
+		disp.setVisible(true);
+		disp.addKeyListener(this);
+		
+		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
 		
+	}
+	
+	/**
+	 * @return the player
+	 */
+	public Vector getPlayerPos()
+	{
+		return player.pos.copy();
+	}
+
+	/**
+	 * @return the offset
+	 */
+	public Vector getOffset()
+	{
+		return offset.copy();
 	}
 	
 	public void startGame()
@@ -149,30 +169,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	//////////////////////////////////////////RENDER FUNCTIONS/////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	@Override
-	public void display(GLAutoDrawable drawable)
-
-	{
-		stepGame();
-		
-		GL2 gl = drawable.getGL().getGL2();
-		
-		gl.glLoadIdentity();
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		
-		gl.glPushMatrix();
-		
-		gl.glTranslated(-(player.pos.x + offset.x), -(player.pos.y + offset.y), 0);
-		
-		drawMapGeometry(gl);
-		drawEnts(gl);
-		drawGraph(gl);
-		drawPlayerInfo(gl);
-		
-		gl.glPopMatrix();
-		
-	}
-
 	public void drawMapGeometry(GL2 gl)
 	{
 		gl.glColor3d(0.75,0.75,0.75);
@@ -292,7 +288,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 				
 				if((e.TYPE & Entity.BODY) != 0)
 				{
-					gl.glColor3d(1,1,1);
+					gl.glColor3d(e.r,e.g,e.b);
 					gl.glVertex2d(e.pos.x, e.pos.y);
 				}
 				
@@ -318,33 +314,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			gl.glEnd();
 		}
-	}
-	
-	@Override
-	public void dispose(GLAutoDrawable drawable)
-	{
-		
-	}
-	
-	@Override
-	public void init(GLAutoDrawable drawable)
-	{
-		GL2 gl = drawable.getGL().getGL2();
-		gl.glPointSize(3.0f);
-		gl.glLineWidth(2.0f);
-		
-		gl.glEnable(GL2.GL_BLEND);
-		gl.glEnable(GL2.GL_LINE_SMOOTH);
-		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-		gl.glEnable(GL2.GL_POLYGON_SMOOTH);
-		
-	}
-	
-	@Override
-	public void reshape(GLAutoDrawable drawable, int w, int h, int arg3,
-			int arg4)
-	{
-		
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -748,7 +717,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		descWithPlayer = new Dijkstra.Description(gameMap.desc, extraNodes, extraEdges);
 	}
 	/**
-	 * Move all projetiles 
+	 * Move all projectiles
 	 */
 	public void stepCalculateProjectileHits()
 	{
@@ -810,15 +779,20 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	 */
 	public void stepSpawnMonster()
 	{
-		if(countMonsters() < 500 && Math.random() < 0.50)
+		if(countMonsters() < 500 && Math.random() < 1)
 		{
-			Vector pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
+			double theta = Math.random()*Math.PI*2;
+			double r = 1.5 + Math.random();
+			
+			Vector pos = new Vector(player.pos.x + r*Math.cos(theta), player.pos.y + r*Math.sin(theta));
 			
 			if(insideGeometry(pos) == null)
 			{
 				Entity monster = new Entity(Entity.BODY);
 				monster.pos = pos;
-				monster.v = new Vector();
+				monster.r = Math.random()*0.2;
+				monster.g = Math.random()*0.2+0.2;
+				monster.b = Math.random()*0.2;
 				
 				ents.add(monster);
 				

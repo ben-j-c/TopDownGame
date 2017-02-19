@@ -31,6 +31,9 @@ class Entity
 	Vector v;
 	Triangle collide;
 	double life = 10;
+	
+	double r, g, b;
+	
 	int TYPE;
 	Entity(int t)
 	{

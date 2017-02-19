@@ -197,8 +197,15 @@ public final class Dijkstra
 				u = lowv;
 			}
 			
-			if(u.equals(end))	
+			try
+			{
+				if(u.equals(end))
+					break;
+			}
+			catch(NullPointerException e)
+			{
 				break;
+			}
 			
 			
 			java.util.List<Vector> neighbor = desc.getNeighbor(u);
