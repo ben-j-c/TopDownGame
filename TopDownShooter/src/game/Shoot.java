@@ -26,59 +26,7 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 
-/**
- * 
- * @author Benjamin Correia
- * 
- * A class describing a generic entity
- * It contains data describing:
- * Position
- * Velocity
- * Hitbox
- * Life and
- * Type of entity
- *
- */
-class Entity
-{
-	public static final int NULL		= 0;
-	public static final int PROJECTILE	= 1;
-	public static final int SOLID 		= 2;
-	public static final int HITBOX 		= 4;
-	public static final int BODY 		= 16;
-	public static final int LASER 		= 32;
-	
-	
-	Vector pos;
-	Vector headTo;
-	Vector v;
-	Triangle collide;
-	double life = 10;
-	int TYPE;
-	Entity(int t)
-	{
-		TYPE = t;
-		pos = new Vector();
-		v = new Vector();
-		headTo = new Vector();
-	}
-	
-	public Entity(Entity e)
-	{
-		pos = new Vector(e.pos);
-		v = new Vector(e.v);
-		collide = e.collide;
-		life = e.life;
-		TYPE = e.TYPE;
-	}
-	
-	public boolean is(int TYPE)
-	{
-		return (this.TYPE & TYPE) != 0;
-	}
-	
-	
-}
+
 /**
  * 
  * @author Ben
@@ -102,9 +50,6 @@ final class KeyList
  */
 public class Shoot extends JFrame implements GLEventListener, MouseListener, KeyListener, Runnable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.005;
@@ -129,7 +74,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	public Vector offset = new Vector(0,0);
 	
 	private ArrayList<Entity> ents = new ArrayList<Entity>();
-	private ArrayList<Entity> eSwap = new ArrayList<Entity>();
 	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	
 	private KeyList keys = new KeyList();
@@ -156,6 +100,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		animator = new FPSAnimator(canvas, 50);
 		
 	}
+	
 	public void startGame()
 	{
 		animator.start();
@@ -200,8 +145,13 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		return null;
 	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////RENDER FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	@Override
 	public void display(GLAutoDrawable drawable)
+
 	{
 		stepGame();
 		
@@ -214,42 +164,119 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 		gl.glTranslated(-(player.pos.x + offset.x), -(player.pos.y + offset.y), 0);
 		
+		drawMapGeometry(gl);
+		drawEnts(gl);
+		drawGraph(gl);
+		drawPlayerInfo(gl);
 		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////DRAW THE MAP GEOMETRY////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		gl.glPopMatrix();
+		
+	}
+
+	public void drawMapGeometry(GL2 gl)
+	{
+		gl.glColor3d(0.75,0.75,0.75);
+		gl.glBegin(GL2.GL_TRIANGLES);
+		
+		
+		for(Triangle t : gameMap.geo)
 		{
-			gl.glColor3d(0.75,0.75,0.75);
-			gl.glBegin(GL2.GL_TRIANGLES);
-			
-			
-			for(Triangle t : gameMap.geo)
-			{
-				gl.glVertex2d(t.a.x, t.a.y);
-				gl.glVertex2d(t.b.x, t.b.y);
-				gl.glVertex2d(t.c.x, t.c.y);
-			}
-			
-			gl.glEnd();
-			
-			gl.glBegin(gl.GL_LINES);
-			
-			for(Triangle t : gameMap.geo)
-			{
-				gl.glVertex2d(t.a.x, t.a.y);
-				gl.glVertex2d(t.b.x, t.b.y);
-				gl.glVertex2d(t.b.x, t.b.y);
-				gl.glVertex2d(t.c.x, t.c.y);
-				gl.glVertex2d(t.c.x, t.c.y);
-				gl.glVertex2d(t.a.x, t.a.y);
-			}
-			
-			gl.glEnd();
+			gl.glVertex2d(t.a.x, t.a.y);
+			gl.glVertex2d(t.b.x, t.b.y);
+			gl.glVertex2d(t.c.x, t.c.y);
 		}
 		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////DRAW THE ENTITIES AND PLAYER/////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		gl.glEnd();
+		
+		gl.glBegin(gl.GL_LINES);
+		
+		for(Triangle t : gameMap.geo)
+		{
+			gl.glVertex2d(t.a.x, t.a.y);
+			gl.glVertex2d(t.b.x, t.b.y);
+			gl.glVertex2d(t.b.x, t.b.y);
+			gl.glVertex2d(t.c.x, t.c.y);
+			gl.glVertex2d(t.c.x, t.c.y);
+			gl.glVertex2d(t.a.x, t.a.y);
+		}
+		
+		gl.glEnd();
+	}
+	
+	public void drawGraph(GL2 gl)
+	{
+		gl.glBegin(GL.GL_LINES);
+		gl.glColor3d(0.5, 0.5, 0.5);
+		for(Dijkstra.Edge e : gameMap.desc.getEdges())
+		{
+			gl.glVertex2d(e.a.x, e.a.y);
+			gl.glVertex2d(e.b.x, e.b.y);
+		}
+		gl.glEnd();
+		
+		gl.glBegin(GL.GL_POINTS);
+		gl.glColor3d(0.5, 0, 1);
+		for(Vector v : gameMap.desc.getNodes())
+		{
+			gl.glVertex2d(v.x, v.y);
+		}
+		gl.glEnd();
+		
+		gl.glLineWidth(1.0f);
+		
+		gl.glBegin(GL.GL_LINES);
+		gl.glColor3d(0.5, 0.5, 0.5);
+		for(Dijkstra.Edge e : descWithPlayer.getEdges())
+		{
+			gl.glVertex2d(e.a.x, e.a.y);
+			gl.glVertex2d(e.b.x, e.b.y);
+		}
+		gl.glEnd();
+		
+		gl.glBegin(GL.GL_POINTS);
+		gl.glColor3d(0.5, 0, 1);
+		for(Vector v : descWithPlayer.getNodes())
+		{
+			gl.glVertex2d(v.x, v.y);
+		}
+		gl.glEnd();
+		
+		gl.glLineWidth(2.0f);
+		
+		gl.glPopMatrix();
+	}
+	
+	public void drawPlayerInfo(GL2 gl)
+	{
+		gl.glBegin(GL2.GL_QUADS);
+		
+		gl.glColor4d(0.75, 0.25, 0.25, 0.5);
+		
+		gl.glVertex2d(-1, 1);
+		gl.glVertex2d(-1, 0.95);
+		gl.glVertex2d((player.life - 5.0)/5.0 , 0.95);
+		gl.glVertex2d((player.life - 5.0)/5.0 , 1);
+		
+		
+		gl.glEnd();
+		
+		{
+			java.awt.Point pos = canvas.getMousePosition();
+			if(pos != null)
+			{
+				
+				
+				gl.glBegin(GL2.GL_POINTS);
+				gl.glColor3d(Math.random(), Math.random(), Math.random());
+				Vector pos2 = translateToReal(pos.x, pos.y);
+				gl.glVertex2d(pos.x, pos.y);
+				gl.glEnd();
+			}
+		}
+	}
+	
+	public void drawEnts(GL2 gl)
+	{
 		if(GAME_STARTED)
 		{
 			//gl.glColor3d(1, 0, 0);
@@ -291,85 +318,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			
 			gl.glEnd();
 		}
-		
-		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////DRAW THE GRAPH///////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		
-		gl.glBegin(GL.GL_LINES);
-		gl.glColor3d(0.5, 0.5, 0.5);
-		for(Dijkstra.Edge e : gameMap.desc.getEdges())
-		{
-			gl.glVertex2d(e.a.x, e.a.y);
-			gl.glVertex2d(e.b.x, e.b.y);
-		}
-		gl.glEnd();
-		
-		gl.glBegin(GL.GL_POINTS);
-		gl.glColor3d(0.5, 0, 1);
-		for(Vector v : gameMap.desc.getNodes())
-		{
-			gl.glVertex2d(v.x, v.y);
-		}
-		gl.glEnd();
-		
-		gl.glLineWidth(1.0f);
-		
-		gl.glBegin(GL.GL_LINES);
-		gl.glColor3d(0.5, 0.5, 0.5);
-		for(Dijkstra.Edge e : descWithPlayer.getEdges())
-		{
-			gl.glVertex2d(e.a.x, e.a.y);
-			gl.glVertex2d(e.b.x, e.b.y);
-		}
-		gl.glEnd();
-		
-		gl.glBegin(GL.GL_POINTS);
-		gl.glColor3d(0.5, 0, 1);
-		for(Vector v : descWithPlayer.getNodes())
-		{
-			gl.glVertex2d(v.x, v.y);
-		}
-		gl.glEnd();
-		
-		gl.glLineWidth(2.0f);
-		
-		gl.glPopMatrix();
-		
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////DRAW PLAYER SPECIFIC INFO////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		gl.glBegin(GL2.GL_QUADS);
-		
-		gl.glColor4d(0.75, 0.25, 0.25, 0.5);
-		
-		gl.glVertex2d(-1, 1);
-		gl.glVertex2d(-1, 0.95);
-		gl.glVertex2d((player.life - 5.0)/5.0 , 0.95);
-		gl.glVertex2d((player.life - 5.0)/5.0 , 1);
-		
-		
-		gl.glEnd();
-		
-		{
-			java.awt.Point pos = canvas.getMousePosition();
-			if(pos != null)
-			{
-				
-				
-				gl.glBegin(GL2.GL_POINTS);
-				gl.glColor3d(Math.random(), Math.random(), Math.random());
-				Vector pos2 = translateToReal(pos.x, pos.y);
-				gl.glVertex2d(pos.x, pos.y);
-				gl.glEnd();
-			}
-		}
-		
-		
 	}
 	
 	@Override
@@ -398,6 +346,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	{
 		
 	}
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////RUN FUNCTION/////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -450,7 +399,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////GAME LOGIC///////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////KEYB LOGIC///////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void mouseClicked(MouseEvent e)
@@ -698,6 +647,10 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	{
 		
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////GAME LOGIC///////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public boolean isGameContinuing()
 	{
