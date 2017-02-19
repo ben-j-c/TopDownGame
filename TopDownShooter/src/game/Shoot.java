@@ -72,6 +72,11 @@ class Entity
 		TYPE = e.TYPE;
 	}
 	
+	public boolean is(int TYPE)
+	{
+		return (this.TYPE & TYPE) != 0;
+	}
+	
 	
 }
 /**
@@ -106,7 +111,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 	java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
-	public int c2 = 0;
+	java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
 	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
@@ -399,7 +404,6 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 	
 	public void run()
 	{	
-		int my_count = 0;
 		while(counter.get() < ents.size())
 		{
 			Entity e = null;
@@ -407,8 +411,7 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			{
 				if(counter.get() < ents.size())
 				{
-					e = ents.get(my_count);
-					my_count = counter.incrementAndGet();
+					e = ents.get(counter.getAndIncrement());
 				}
 				else
 				{
@@ -417,15 +420,20 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 			}
 			
 			e.headTo = getNextMoveTo(e);
+			
+			synchronized(progress)
+			{
+				progress.incrementAndGet();
+			}
 		}
 		
 		
 		
-		synchronized(this)
+		synchronized(progress)
 		{
-			if(my_count >= ents.size())
+			if(progress.get() >= ents.size())
 			{
-				this.notify();
+				progress.notify();
 			}
 			
 		}
@@ -691,245 +699,281 @@ public class Shoot extends JFrame implements GLEventListener, MouseListener, Key
 		
 	}
 	
-	public void stepGame()
+	public boolean isGameContinuing()
 	{
-		if(GAME_STARTED)
+		if(player.life <= 0)
 		{
-			player.v.set(0,0);
+			ents.clear();
+			descWithPlayer = new Dijkstra.Description();
+			player.pos.set(0,0);
 			
-			if(keys.UP)
+			return false;
+		}
+		
+		return true;
+	}
+	/**
+	 * Set the player's velocity
+	 */
+	public void stepPlayer()
+	{
+		player.v.set(0,0);
+		
+		if(keys.UP)
+		{
+			player.v.y += 1;	
+		}
+		else if(keys.DOWN)
+		{
+			player.v.y += -1;
+		}
+		if(keys.RIGHT)
+		{
+			player.v.x += 1;
+		}
+		else if(keys.LEFT)
+		{
+			player.v.x += -1;
+		}
+		player.v.unitize();
+		player.v.scaleset(PLAYER_SPEED);
+		
+		for(Entity e : ents)
+		{
+			if((e.TYPE & Entity.BODY) != 0)
 			{
-				player.v.y += 1;	
-			}
-			else if(keys.DOWN)
-			{
-				player.v.y += -1;
-			}
-			if(keys.RIGHT)
-			{
-				player.v.x += 1;
-			}
-			else if(keys.LEFT)
-			{
-				player.v.x += -1;
-			}
-			player.v.unitize();
-			player.v.scaleset(PLAYER_SPEED);
-			
-			for(Entity e : ents)
-			{
-				if((e.TYPE & Entity.BODY) != 0)
+				if(e.pos.skew(player.pos) <= 0.02)
 				{
-					if(e.pos.skew(player.pos) <= 0.02)
-					{
-						player.life -= 0.01;
-					}
+					player.life -= 0.01;
 				}
-			}
-			
-			if(player.life <= 0)
-			{
-				this.GAME_STARTED = false;
-				
-				ents.clear();
-				descWithPlayer = new Dijkstra.Description();
-				player.pos.set(0,0);
-				
-				return;
-			}
-			
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			/////////////////SPAWNING MONSTER//////////////////////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			
-			if(countMonsters() < 500 && Math.random() < 0.50)
-			{
-				Vector pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
-				
-				if(insideGeometry(pos) == null)
-				{
-					Entity monster = new Entity(Entity.BODY);
-					monster.pos = pos;
-					monster.v = new Vector();
-					
-					ents.add(monster);
-					
-				}
-			}
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////SET PLAYER POS/////////////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			{
-				Vector nl = player.pos.add(player.v);
-				
-				BlockingVector block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);
-				if(block.block == null || block.t > 1)
-				{
-					player.pos.addset(player.v);
-				}
-				else
-				{	
-					//Keep projecting onto blocking vector until you are no longer being blocked
-					do
-					{
-						nl = player.pos.add(nl.sub(player.pos).projectOnto(block.block));
-						block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);				
-					}while(block.block != null && block.t < 1);
-					player.pos.set(nl);
-				}
-				
-			}
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////SET GRAPH WITH PLAYER//////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			{
-				
-				ArrayList<Vector> extraNodes = new ArrayList<Vector>();
-				ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
-				extraNodes.add(player.pos);
-				
-				for(Vector v: gameMap.desc.getNodes())
-				{
-					boolean canSee = Triangle.clearline(player.pos, v, gameMap.geo);
-					
-					if(canSee)
-					{
-						extraEdges.add(new Dijkstra.Edge(player.pos, v));
-					}
-				}
-				
-				descWithPlayer = new Dijkstra.Description(gameMap.desc, extraNodes, extraEdges);
-			}
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////MOVE ENTITIES CLOSER TO PLAYER/////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			{
-				toRemove.clear();
-				counter.set(0);
-				
-				for(int i = 0 ; i < THREAD_COUNT ; i++)
-					es.execute(this);
-				
-				synchronized(this)
-				{
-					while(counter.get() < ents.size())
-					{
-						try
-						{
-							this.wait();	
-						}
-						catch (InterruptedException e1)
-						{
-							e1.printStackTrace();
-						}
-						
-					}
-					
-				}
-				
-				for(Entity e : ents)
-				{
-					if((e.TYPE & Entity.BODY) == Entity.BODY)
-					{	
-						e.v = e.headTo.sub(e.pos).unitize();
-						e.v.scaleset(PLAYER_SPEED*0.9);
-						
-						Vector nl = e.pos.add(e.v);
-						
-						Vector nv = new Vector(e.v);
-						for(Entity f : ents)
-						{	
-							double skew = e.pos.skew(f.pos);
-							if(f != e && skew < 0.01)
-							{
-								if(f.TYPE == Entity.PROJECTILE)
-								{
-									toRemove.add(f);
-									toRemove.add(e);
-									f.TYPE = Entity.NULL;
-								}
-								else
-								{
-									
-									Vector dir = nl.sub(f.pos);
-									
-									nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*0.9));
-								}
-								
-								
-							}
-						}
-						
-						
-						nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*0.9));
-						BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
-						
-						if(block.block == null || block.t > 1)
-						{
-							e.pos.set(nl);
-						}
-						else
-						{		
-							do
-							{
-								nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
-								block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);				
-							}while(block.block != null && block.t < 1);
-							
-							e.pos.set(nl);
-						}
-						
-					}
-					
-					
-					
-				}
-				ents.removeAll(toRemove);
-			}
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			////////////////////////////DEAL DAMAGE TO MONSTERS////////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			{
-				int size = ents.size();
-				ArrayList<Entity> ents_to_remove = new ArrayList<Entity>();
-				for(int i = 0; i < size ; i++)
-				{
-					Entity e = ents.get(i);
-					if((e.TYPE & Entity.PROJECTILE) != 0)
-					{
-						
-						
-						Vector nl = e.pos.add(e.v);
-						double t = Triangle.calcIntersect(e.pos, nl, gameMap.geo).t;
-						
-						if(t > 1)
-						{
-							e.pos.addset(e.v);
-						}
-						else
-						{
-							ents_to_remove.add(e);
-						}
-					}
-					
-					if((e.TYPE & Entity.LASER) != 0)
-					{
-						if(e.life <= 0)
-						{
-							ents_to_remove.add(e);
-						}
-						else
-						{
-							e.life--;
-						}
-					}
-				}
-				ents.removeAll(ents_to_remove);
 			}
 		}
 	}
 	
+	/**
+	 * Move the player in the map
+	 */
+	public void stepPlayerPos()
+	{
+		Vector nl = player.pos.add(player.v);
+		
+		BlockingVector block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);
+		if(block.block == null || block.t > 1)
+		{
+			player.pos.addset(player.v);
+		}
+		else
+		{	
+			//Keep projecting onto blocking vector until you are no longer being blocked
+			do
+			{
+				nl = player.pos.add(nl.sub(player.pos).projectOnto(block.block));
+				block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);				
+			}while(block.block != null && block.t < 1);
+			player.pos.set(nl);
+		}
+	}
+	/**
+	 * set the graph with the player to a new graph
+	 */
+	public void stepPlayerGraph()
+	{
+		ArrayList<Vector> extraNodes = new ArrayList<Vector>();
+		ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
+		extraNodes.add(player.pos);
+		
+		for(Vector v: gameMap.desc.getNodes())
+		{
+			boolean canSee = Triangle.clearline(player.pos, v, gameMap.geo);
+			
+			if(canSee)
+			{
+				extraEdges.add(new Dijkstra.Edge(player.pos, v));
+			}
+		}
+		
+		descWithPlayer = new Dijkstra.Description(gameMap.desc, extraNodes, extraEdges);
+	}
+	/**
+	 * Move all projetiles 
+	 */
+	public void stepCalculateProjectileHits()
+	{
+		for(Entity e : ents)
+		{
+			if(e.is(Entity.PROJECTILE))
+			{
+				Vector nl = e.pos.add(e.v);
+				double t = Triangle.calcIntersect(e.pos, nl, gameMap.geo).t;
+				
+				if(t > 1)
+				{
+					e.pos.addset(e.v);
+				}
+				else
+				{
+					toRemove.add(e);
+				}
+			}
+			
+			if(e.is(Entity.LASER))
+			{
+				if(e.life <= 0)
+				{
+					toRemove.add(e);
+				}
+				else
+				{
+					e.life--;
+				}
+			}
+		}
+		
+		for(Entity e : ents)
+		{
+			if(e.is(Entity.BODY))
+			{
+				for(Entity f : ents)
+				{	
+					double skew = e.pos.skew(f.pos);
+					if(f.is(Entity.PROJECTILE) && f != e && skew < 0.01)
+					{
+							toRemove.add(f);
+							toRemove.add(e);
+							f.TYPE = Entity.NULL;
+						
+					}
+				}
+			}
+		}
+	}
 	
+	public void removeEntities()
+	{
+		ents.removeAll(toRemove);
+	}
+	/**
+	 * Spawns a monster in the game area
+	 */
+	public void stepSpawnMonster()
+	{
+		if(countMonsters() < 500 && Math.random() < 0.50)
+		{
+			Vector pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
+			
+			if(insideGeometry(pos) == null)
+			{
+				Entity monster = new Entity(Entity.BODY);
+				monster.pos = pos;
+				monster.v = new Vector();
+				
+				ents.add(monster);
+				
+			}
+		}
+	}
+	
+	/**
+	 * Go through each entity and set its headTo to the next location to get to the player
+	 */
+	public void stepPathMonsters()
+	{
+		counter.set(0);
+		progress.set(0);
+		
+		synchronized(progress)
+		{
+			for(int i = 0 ; i < THREAD_COUNT ; i++)
+				es.execute(this);
+			
+			while(progress.get() < ents.size())
+			{
+				try
+				{
+					progress.wait();	
+				}
+				catch (InterruptedException e1)
+				{
+					e1.printStackTrace();
+				}
+				
+			}
+			
+		}
+	}
+	
+	/**
+	 * Look at each entity that is of type Entity.BODY, and move it to e.headTo, without intersecting with any other entity.
+	 */
+	public void stepMoveMonsters()
+	{
+		for(Entity e : ents)
+		{
+			if(e.is(Entity.BODY))
+			{	
+				e.v = e.headTo.sub(e.pos).unitize();
+				e.v.scaleset(PLAYER_SPEED*0.9);
+				Vector nl = e.pos.add(e.v);
+				Vector nv = new Vector(e.v);
+				
+				for(Entity f : ents)
+				{	
+					double skew = e.pos.skew(f.pos);
+					if(f != e && skew < 0.01)
+					{
+						if(f.is(Entity.BODY))
+						{
+							Vector dir = nl.sub(f.pos);	
+							nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*0.9));
+						}
+					}
+				}
+				nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*0.9));
+				BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
+				
+				if(block.block == null || block.t > 1)
+				{
+					e.pos.set(nl);
+				}
+				else
+				{		
+					do
+					{
+						nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
+						block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);				
+					}while(block.block != null && block.t < 1);
+					
+					e.pos.set(nl);
+				}
+			}
+		}
+	}
+	/**
+	 * Incrementally alter the games state.
+	 */
+	public void stepGame()
+	{
+		GAME_STARTED = isGameContinuing() && GAME_STARTED;
+		if(GAME_STARTED)
+		{
+			this.stepPlayer();
+			this.stepPlayerPos();
+			this.stepPlayerGraph();
+			
+			this.stepCalculateProjectileHits();
+			this.removeEntities();
+			
+			this.stepSpawnMonster();
+			this.stepPathMonsters();
+			this.stepMoveMonsters();
+		}
+	}
+	
+	/**
+	 * Calculates by Dijkstra's algorithm, the best route a entity should follow to get to the player.
+	 * @param e The entity in question
+	 * @return The point that the entity in question should move to
+	 */
 	private Vector getNextMoveTo(Entity e)
 	{
 		Vector pos = player.pos;
