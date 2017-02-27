@@ -54,19 +54,30 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.005;
 	public static final double PARTICLE_SPEED = 0.02;
+	public static final int MAX_MONST = 250;
+	public static final double MONST_SPEED = 0.8;
+	public static final double MONST_SIZE = 0.01;
+	public static final double SPAWN_PROB = 1;
+	public static final double SPAWN_DIST = 1.5;
+	public static final double SPAWN_DIST_VARIATION = 1.5;
+	public static final double MONST_R = 0.2;
+	public static final double MONST_G = 0.2;
+	public static final double MONST_B = 0.2;
+	public static final double MONST_R_OFFSET = 0;
+	public static final double MONST_G_OFFSET = 0.2;
+	public static final double MONST_B_OFFSET = 0;
 	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
-	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
-	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
 	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	private GLCanvas canvas;
 	private Display disp;
-	private Thread runningGame;
+	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
+	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
 	private Map gameMap = new Map();
 	private ArrayList<Vector> points = new ArrayList<Vector>();
-
+	
 	private Dijkstra.Description descWithPlayer = new Dijkstra.Description();
 	
 	private boolean GAME_STARTED = false;
@@ -112,7 +123,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	{
 		return player.pos.copy();
 	}
-
+	
 	/**
 	 * @return the offset
 	 */
@@ -664,7 +675,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 		{
 			if((e.TYPE & Entity.BODY) != 0)
 			{
-				if(e.pos.skew(player.pos) <= 0.02)
+				if(e.pos.skew(player.pos) <= 0.0)
 				{
 					player.life -= 0.01;
 				}
@@ -758,18 +769,17 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 				for(Entity f : ents)
 				{	
 					double skew = e.pos.skew(f.pos);
-					if(f.is(Entity.PROJECTILE) && f != e && skew < 0.01)
+					if(f.is(Entity.PROJECTILE) && f != e && skew < MONST_SIZE)
 					{
-							toRemove.add(f);
-							toRemove.add(e);
-							f.TYPE = Entity.NULL;
+						toRemove.add(f);
+						toRemove.add(e);
+						f.TYPE = Entity.NULL;
 						
 					}
 				}
 			}
 		}
-	}
-	
+	}	
 	public void removeEntities()
 	{
 		ents.removeAll(toRemove);
@@ -779,10 +789,10 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	 */
 	public void stepSpawnMonster()
 	{
-		if(countMonsters() < 500 && Math.random() < 1)
+		if(countMonsters() < MAX_MONST && Math.random() < SPAWN_PROB)
 		{
 			double theta = Math.random()*Math.PI*2;
-			double r = 1.5 + Math.random();
+			double r = SPAWN_DIST + Math.random()*SPAWN_DIST_VARIATION;
 			
 			Vector pos = new Vector(player.pos.x + r*Math.cos(theta), player.pos.y + r*Math.sin(theta));
 			
@@ -790,16 +800,15 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 			{
 				Entity monster = new Entity(Entity.BODY);
 				monster.pos = pos;
-				monster.r = Math.random()*0.2;
-				monster.g = Math.random()*0.2+0.2;
-				monster.b = Math.random()*0.2;
+				monster.r = Math.random()*MONST_R+MONST_R_OFFSET;
+				monster.g = Math.random()*MONST_G+MONST_G_OFFSET;
+				monster.b = Math.random()*MONST_B+MONST_B_OFFSET;
 				
 				ents.add(monster);
 				
 			}
 		}
-	}
-	
+	}	
 	/**
 	 * Go through each entity and set its headTo to the next location to get to the player
 	 */
@@ -807,6 +816,11 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	{
 		counter.set(0);
 		progress.set(0);
+		
+		for(Entity e: ents)
+		{
+			e.headTo = null;
+		}
 		
 		synchronized(progress)
 		{
@@ -839,23 +853,23 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 			if(e.is(Entity.BODY))
 			{	
 				e.v = e.headTo.sub(e.pos).unitize();
-				e.v.scaleset(PLAYER_SPEED*0.9);
+				e.v.scaleset(PLAYER_SPEED*MONST_SPEED);
 				Vector nl = e.pos.add(e.v);
 				Vector nv = new Vector(e.v);
 				
 				for(Entity f : ents)
 				{	
 					double skew = e.pos.skew(f.pos);
-					if(f != e && skew < 0.01)
+					if(f != e && skew < MONST_SIZE)
 					{
 						if(f.is(Entity.BODY))
 						{
 							Vector dir = nl.sub(f.pos);	
-							nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*0.9));
+							nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*MONST_SPEED));
 						}
 					}
 				}
-				nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*0.9));
+				nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*MONST_SPEED));
 				BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
 				
 				if(block.block == null || block.t > 1)
@@ -868,7 +882,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 					{
 						nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
 						block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);				
-					}while(block.block != null && block.t < 1);
+					}while(block.block != null && block.t < 1 && !Triangle.tooClose(e.pos, MONST_SIZE*0.1, gameMap.geo));
 					
 					e.pos.set(nl);
 				}
@@ -909,33 +923,45 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 		
 		boolean canSee = Triangle.clearline(e.pos, pos, gameMap.geo);
 		
-		if(!canSee)
+		if(canSee)
 		{
-			
-			ArrayList<Vector> extraNodes = new ArrayList<Vector>();
-			ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
-			extraNodes.add(e.pos);
-			
-			for(Vector v: gameMap.desc.getNodes())
-			{
-				canSee = Triangle.clearline(e.pos, v, gameMap.geo);
-				
-				if(canSee)
-				{
-					extraEdges.add(new Dijkstra.Edge(e.pos, v));
-				}
-			}
-			
-			Dijkstra.Description temp = new Dijkstra.Description(descWithPlayer, extraNodes, extraEdges);
-			
-			ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
-			
-			return v.get(v.size() - 2);
-			
-			
+			return pos.copy();
 		}
 		
-		return pos;
+		
+		for(Entity other :ents)
+		{
+			if(other.headTo != null && other.pos.sub(e.pos).magsqr() < 4*MONST_SIZE*MONST_SIZE && Triangle.clearline(e.pos, other.headTo, gameMap.geo))
+			{
+				return other.headTo.copy();
+			}
+		}
+		
+		
+		ArrayList<Vector> extraNodes = new ArrayList<Vector>();
+		ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
+		extraNodes.add(e.pos);
+		
+		for(Vector v: gameMap.desc.getNodes())
+		{
+			canSee = Triangle.clearline(e.pos, v, gameMap.geo);
+			
+			if(canSee)
+			{
+				extraEdges.add(new Dijkstra.Edge(e.pos, v));
+			}
+		}
+		
+		Dijkstra.Description temp = new Dijkstra.Description(descWithPlayer, extraNodes, extraEdges);
+		
+		ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
+		
+		if(v.size() > 1)
+			return v.get(v.size() - 2);
+		else
+			return v.get(0);
+				
+		
 		
 		
 	}
@@ -965,7 +991,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 					
 					Vector ab = temp.v.sub(temp.pos);
 					
-					if(e.pos.distance(temp.pos, temp.v) < 0.01 && cos >= 0  && e.pos.sub(temp.pos).projectOnto(ab).magsqr() <= ab.magsqr())
+					if(e.pos.distance(temp.pos, temp.v) < MONST_SIZE && cos >= 0  && e.pos.sub(temp.pos).projectOnto(ab).magsqr() <= ab.magsqr())
 					{
 						to_remove.add(e);
 					}
@@ -980,7 +1006,8 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 			Entity temp = new Entity(Entity.PROJECTILE);
 			temp.v.set(translateToReal(x,y).sub(player.pos));
 			temp.v.unitize();
-			temp.v.scaleset(0.01);
+			temp.v.scaleset(PARTICLE_SPEED);
+			temp.v.addset(player.v);
 			temp.pos.set(player.pos);
 			ents.add(temp);
 		}

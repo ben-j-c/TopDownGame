@@ -10,11 +10,12 @@ import java.util.TreeSet;
  */
 public class Triangle implements Comparable<Triangle>
 {
+	public static final double LARGE_VALUE = 1337.69;
 	
 	public static class BlockingVector
 	{
 		public Vector block = null;
-		public double t = 1337.69;
+		public double t = LARGE_VALUE;
 		
 		
 	}
@@ -222,7 +223,7 @@ public class Triangle implements Comparable<Triangle>
 		if(!correct_edges)
 			edgeCalc();
 		
-		double lowt = 1337.69;
+		double lowt = LARGE_VALUE;
 		
 		{
 			//t = -abXla/abXlalb
@@ -319,7 +320,7 @@ public class Triangle implements Comparable<Triangle>
 	 * @param lb point B on the line AB
 	 * @return true if the line intersects with the edges of this triangle in between A and B
 	 */
-	public boolean isIntersecting(Vector la, Vector lb)
+	public boolean isIntersecting(Vector la, Vector lb, double skew)
 	{
 		if(!correct_edges)
 			edgeCalc();
@@ -331,7 +332,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < 1 && contains(r, 0.00005))
+			if( t > 0 && t < 1 && contains(r, skew))
 			{
 				return true;
 			}
@@ -343,7 +344,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < 1 && contains(r, 0.00005))
+			if( t > 0 && t < 1 && contains(r, skew))
 			{
 				return true;
 			}
@@ -355,7 +356,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < 1 && contains(r, 0.00005))
+			if( t > 0 && t < 1 && contains(r, skew))
 			{
 				return true;
 			}
@@ -387,7 +388,7 @@ public class Triangle implements Comparable<Triangle>
 	public static double calcIntersectJustT(Vector la , Vector lb, Collection<Triangle> geo)
 	{
 		
-		double lowt = 1337.69;
+		double lowt = LARGE_VALUE;
 		
 		for(Triangle tri : geo)
 		{
@@ -425,6 +426,19 @@ public class Triangle implements Comparable<Triangle>
 		return lowt;
 	}
 	
+	public static boolean tooClose(Vector v, double skew, Collection<Triangle> geo)
+	{
+		for(Triangle tri : geo)
+		{
+			if(tri.contains(v, skew))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public boolean correctEdges()
 	{
 		return correct_edges;
@@ -449,7 +463,7 @@ public class Triangle implements Comparable<Triangle>
 	{
 		for(Triangle t: geo)
 		{
-			if(t.isIntersecting(pos, v))
+			if(t.isIntersecting(pos, v,0.0005))
 			{
 				return false;
 			}
