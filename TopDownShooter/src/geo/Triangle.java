@@ -11,6 +11,7 @@ import java.util.TreeSet;
 public class Triangle implements Comparable<Triangle>
 {
 	public static final double LARGE_VALUE = 1337.69;
+	public static final double DEFAULT_ERROR = 0.000001f; 
 	
 	public static class BlockingVector
 	{
@@ -232,7 +233,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < lowt && contains(r, 0.00005))
+			if( t > 0 && t < lowt && contains(r, DEFAULT_ERROR))
 				lowt = t;
 		}
 		{
@@ -242,7 +243,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < lowt && contains(r, 0.00005))
+			if( t > 0 && t < lowt && contains(r, DEFAULT_ERROR))
 				lowt = t;
 		}
 		{
@@ -252,7 +253,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < lowt && contains(r, 0.00005))
+			if( t > 0 && t < lowt && contains(r, DEFAULT_ERROR))
 				lowt = t;
 		}
 		
@@ -275,7 +276,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < lowt.t && contains(r, 0.00005))
+			if( t > 0 && t < lowt.t && contains(r, DEFAULT_ERROR))
 			{
 				lowt.t = t;
 				
@@ -289,7 +290,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < lowt.t && contains(r, 0.00005))
+			if( t > 0 && t < lowt.t && contains(r, DEFAULT_ERROR))
 			{
 				lowt.t = t;
 				
@@ -303,7 +304,7 @@ public class Triangle implements Comparable<Triangle>
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
-			if( t > 0 && t < lowt.t && contains(r, 0.00005))
+			if( t > 0 && t < lowt.t && contains(r, DEFAULT_ERROR))
 			{
 				lowt.t = t;
 				

@@ -50,7 +50,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.005;
 	public static final double PARTICLE_SPEED = 0.02;
-	public static final int MAX_MONST = 250;
+	public static final int MAX_MONST = 500;
 	public static final double MONST_SPEED = 0.8;
 	public static final double MONST_SIZE = 0.01;
 	public static final double SPAWN_PROB = 1;
@@ -88,6 +88,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	private KeyList keys = new KeyList();
 	
 	boolean weapon = false;
+	public static final boolean DEBUG = true;
 	
 	Shoot()
 	{
@@ -520,7 +521,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 		{
 			if((e.TYPE & Entity.BODY) != 0)
 			{
-				if(e.pos.skew(player.pos) <= 0.0)
+				if(!DEBUG && e.pos.skew(player.pos) <= MONST_SIZE)
 				{
 					player.life -= 0.01;
 				}
