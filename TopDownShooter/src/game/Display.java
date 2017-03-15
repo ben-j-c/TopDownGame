@@ -36,7 +36,7 @@ public class Display  extends JFrame implements GLEventListener
 
 		drawMapGeometry(gl);
 		drawEnts(gl);
-		if(inst.DEBUG)
+		if(inst.DEBUG || !inst.GAME_STARTED)
 			drawGraph(gl);
 
 		gl.glPopMatrix();

@@ -88,7 +88,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	private KeyList keys = new KeyList();
 	
 	boolean weapon = false;
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	
 	Shoot()
 	{
@@ -111,6 +111,11 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
 		
+	}
+	
+	public boolean isGameRunning()
+	{
+		return this.GAME_STARTED;
 	}
 	
 	/**
