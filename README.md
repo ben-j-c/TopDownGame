@@ -3,7 +3,6 @@ A top down shooter being used to learn various concepts in Java.
 This is a little game made by Benjamin Correia.
 
 # Supporting software
-Libraries used:
 JOGL:
   Availible at: 
     http://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z
@@ -18,7 +17,6 @@ Game Instructions:
     - hit 'q' to toggle weapons
 
 # Videos
-Videos:
 	Mapping demo and gameplay:
 		https://youtu.be/JbbWrBtPMYM
 	Dijkstra Test and gameplay:
