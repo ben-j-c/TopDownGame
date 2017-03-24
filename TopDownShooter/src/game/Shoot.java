@@ -26,8 +26,10 @@ import com.jogamp.opengl.util.FPSAnimator;
  * @author Ben
  * The game class includes all the rendering mouse handling
  */
-public class Shoot implements MouseListener, KeyListener, Runnable
+public class Shoot implements Runnable
 {
+	//Constants
+	public static final boolean DEBUG = false;
 	private static final long serialVersionUID = 1L;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.005;
@@ -46,31 +48,37 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	public static final double MONST_B_OFFSET = 0;
 	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 	
+	//Service objects
 	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	protected GLCanvas canvas;
 	private Display disp;
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
+
+	//Control objects
+	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	
-	protected Map gameMap = new Map();
-	protected ArrayList<Vector> points = new ArrayList<Vector>();
-	
-	protected Dijkstra.Description descWithPlayer = new Dijkstra.Description();
-	
+	//Control variables
 	protected boolean GAME_STARTED = false;
 	private boolean PLACE_GRAPH = false;
 	private long gametime = 0;
-	protected Entity player = new Entity(Entity.SOLID);
 	protected Vector offset = new Vector(0,0);
 	
+	//Game objects
+	protected Entity player = new Entity(Entity.SOLID);
 	protected ArrayList<Entity> ents = new ArrayList<Entity>();
-	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
-	
 	KeyList keys = new KeyList();
+	protected Map gameMap = new Map();
+	protected ArrayList<Vector> points = new ArrayList<Vector>();	
+	protected Dijkstra.Description descWithPlayer = new Dijkstra.Description();
 	
+	//Interface objects
+	protected ControlMouse mcontrol = new ControlMouse(this);
+	protected ControlKeyboard kbcontrol = new ControlKeyboard(this);
+	
+	//Game variables
 	boolean weapon = false;
-	public static final boolean DEBUG = false;
 	
 	Shoot()
 	{
@@ -80,15 +88,15 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 		
 		canvas = new GLCanvas(caps);
 		canvas.setSize(1000, 1000);
-		canvas.addMouseListener(this);
-		canvas.addKeyListener(this);
+		canvas.addMouseListener(mcontrol);
+		canvas.addKeyListener(kbcontrol);
 		
 		disp = new Display(this);
 		disp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		disp.setSize(1000,1000);
 		disp.add(canvas);
 		disp.setVisible(true);
-		disp.addKeyListener(this);
+		disp.addKeyListener(kbcontrol);
 		
 		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
@@ -209,239 +217,6 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	{
 		Shoot shoot = new Shoot();
 		shoot.startGame();
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////KEYB LOGIC///////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	@Override
-	public void mouseClicked(MouseEvent e)
-	{
-		
-	}
-	@Override
-	public void mouseEntered(MouseEvent e)
-	{
-		
-	}
-	@Override
-	public void mouseExited(MouseEvent e)
-	{
-		
-	}
-	@Override
-	public void mousePressed(MouseEvent e)
-	{
-		if(!GAME_STARTED)
-		{
-			if(PLACE_GRAPH)
-			{
-				Vector temp = translateToReal(e.getX(), e.getY());
-				
-				Vector temp2 = gameMap.desc.getSkewed(temp, SNAP_DISTANCE*SNAP_DISTANCE);
-				if(temp2 == null)
-				{
-					points.add(temp);
-					gameMap.desc.addNode(temp);
-				}
-				else
-				{
-					points.add(temp2);
-					gameMap.desc.addNode(temp2);
-				}
-				
-				if(points.size() == 2)
-				{
-					gameMap.desc.addEdge(points.remove(0), points.remove(0));
-					points.clear();
-				}
-			}
-			else
-			{
-				Vector temp = translateToReal(e.getX(), e.getY());
-				
-				for(Triangle t: gameMap.geo)
-				{
-					Vector temp1 = t.skew(temp, SNAP_DISTANCE);
-					if(temp1 != null)
-					{
-						temp = temp1;
-						break;
-					}
-				}
-				
-				points.add(temp);
-				
-				if(points.size()%3 == 0)
-				{
-					int size = points.size();
-					Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
-					if(!t.isFlat())
-					{
-						gameMap.geo.add(t);
-					}
-				}
-			}
-		}
-		else
-		{
-			switch(e.getButton())
-			{
-				case MouseEvent.BUTTON1:
-				{
-					fireWeapon(e.getX(), e.getY());
-					break;
-				}
-				case MouseEvent.BUTTON2:
-				{
-					keys.MOUSE_RIGHT = true;
-					keys.MOUSE_X = e.getX();
-					keys.MOUSE_Y = e.getY();
-					break;
-				}
-				case MouseEvent.BUTTON3:
-				{
-					keys.MOUSE_X = e.getX();
-					keys.MOUSE_Y = e.getY();
-					break;
-				}
-			}
-		}
-		
-	}
-	@Override
-	public void mouseReleased(MouseEvent e)
-	{
-		if(!GAME_STARTED)
-		{
-			;
-		}
-		else
-		{
-			switch(e.getButton())
-			{
-				case MouseEvent.BUTTON1:
-				{
-					keys.MOUSE_LEFT = false;
-					break;
-				}
-				case MouseEvent.BUTTON2:
-				{
-					keys.MOUSE_RIGHT = false;
-					break;
-				}
-				case MouseEvent.BUTTON3:
-				{
-					break;
-				}
-			}
-		}
-	}
-	@Override
-	public void keyPressed(KeyEvent e)
-	{
-		if(!GAME_STARTED)
-		{
-			char keychar = e.getKeyChar();
-			if(keychar == 'l')
-			{
-				
-				midGameReset();
-			}
-			else if(keychar == 'k')
-			{
-				switchMappingMode();
-			}
-			else if(keychar == 'm')
-			{
-				openMapDialog();
-			}
-			else if(charIsOneOf(keychar, 'w','a','s','d'))
-			{
-				changeOffset(e);
-			}
-		}
-		
-		char key = e.getKeyChar();
-		
-		switch (key)
-		{
-			case 'w':
-			{
-				keys.UP = true;
-				keys.DOWN = false;
-				break;
-			}
-			case 's':
-			{
-				keys.DOWN = true;
-				keys.UP = false;
-				break;
-			}
-			case 'a':
-			{
-				keys.LEFT = true;
-				keys.RIGHT = false;
-				break;
-			}
-			case 'd':
-			{
-				keys.RIGHT = true;
-				keys.LEFT = false;
-				break;
-			}
-			case 'q':
-			{
-				weapon = !weapon;
-				break;
-			}
-			default:
-			{
-				break;
-			}
-		}
-		
-	}
-	@Override
-	public void keyReleased(KeyEvent e)
-	{
-		
-		char key = e.getKeyChar();
-		
-		switch (key)
-		{
-			case 'w':
-			{
-				keys.UP = false;
-				break;
-			}
-			case 's':
-			{
-				keys.DOWN = false;
-				break;
-			}
-			case 'a':
-			{
-				keys.LEFT = false;
-				break;
-			}
-			case 'd':
-			{
-				keys.RIGHT = false;
-				break;
-			}
-			default:
-			{
-				break;
-			}
-		}
-		
-		
-	}
-	@Override
-	public void keyTyped(KeyEvent e)
-	{
-		
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
