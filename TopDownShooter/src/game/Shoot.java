@@ -67,7 +67,7 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	protected ArrayList<Entity> ents = new ArrayList<Entity>();
 	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	
-	private KeyList keys = new KeyList();
+	KeyList keys = new KeyList();
 	
 	boolean weapon = false;
 	public static final boolean DEBUG = false;
