@@ -342,41 +342,24 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 	{
 		if(!GAME_STARTED)
 		{
-			if(e.getKeyChar() == 'l')
-			{	
-				ents = new ArrayList<Entity>();
-				player = new Entity(Entity.BODY);
-				offset = new Vector(0,0);
-				
-				
-				
-				do 
-				{
-					player.pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
-				}while(insideGeometry(player.pos) != null);
-				
-				GAME_STARTED = true;
-			}
-			else if(e.getKeyChar() == 'k')
+			char keychar = e.getKeyChar();
+			if(keychar == 'l')
 			{
-				PLACE_GRAPH = !PLACE_GRAPH;
 				
-				points.clear();
+				midGameReset();
 			}
-			else if(e.getKeyChar() == 'm')
+			else if(keychar == 'k')
 			{
-				points.clear();
-				gameMap.opendialog();
-				offset = new Vector(0,0);
+				switchMappingMode();
 			}
-			else if(e.getKeyChar() == 'w')
-				offset.addset(new Vector(0,1));
-			else if(e.getKeyChar() == 's')
-				offset.addset(new Vector(0,-1));
-			else if(e.getKeyChar() == 'a')
-				offset.addset(new Vector(-1,0));
-			else if(e.getKeyChar() == 'd')
-				offset.addset(new Vector(1,0));
+			else if(keychar == 'm')
+			{
+				openMapDialog();
+			}
+			else if(charIsOneOf(keychar, 'w','a','s','d'))
+			{
+				changeOffset(e);
+			}
 		}
 		
 		char key = e.getKeyChar();
@@ -873,5 +856,68 @@ public class Shoot implements MouseListener, KeyListener, Runnable
 				(2*x - canvas.getWidth())/canvas.getWidth(),
 				(2*(canvas.getHeight() - y) - canvas.getHeight())/canvas.getHeight()
 				).add(player.pos).add(offset);
+	}
+	
+	/**
+	 * Prepares for the core game to begin; this means it clears entities, resets player, resets offset, places the player, and sets GAME_STARTED flag to true.
+	 */
+	protected void midGameReset()
+	{
+		ents.clear();
+		player = new Entity(Entity.BODY);
+		offset = new Vector(0,0);
+		
+		do 
+		{
+			player.pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
+		}while(insideGeometry(player.pos) != null);
+		
+		GAME_STARTED = true;
+	}
+	
+	/**
+	 * Alternate the PLACE_GRAPH flag, clears points.
+	 */
+	protected void switchMappingMode()
+	{
+		PLACE_GRAPH = !PLACE_GRAPH;
+		
+		points.clear();
+	}
+	
+	/**
+	 * Open the map load/save dialog, clears points, resets offset.
+	 */
+	protected void openMapDialog()
+	{
+		points.clear();
+		gameMap.opendialog();
+		offset = new Vector(0,0);
+	}
+	
+	/**
+	 * Increment the offset of the screen.  Takes in a key which indicates the direction to move the offset
+	 * 
+	 * @param e the key event containing the direction key
+	 */
+	protected void changeOffset(KeyEvent e)
+	{
+		if(e.getKeyChar() == 'w')
+			offset.addset(new Vector(0,1));
+		else if(e.getKeyChar() == 's')
+			offset.addset(new Vector(0,-1));
+		else if(e.getKeyChar() == 'a')
+			offset.addset(new Vector(-1,0));
+		else if(e.getKeyChar() == 'd')
+			offset.addset(new Vector(1,0));
+	}
+	
+	public static boolean charIsOneOf(char x, char ... elements)
+	{
+		for(char c: elements)
+			if(x == c)
+				return true;
+		return false;
+						
 	}
 }
