@@ -17,9 +17,11 @@ Game Instructions:
     - hit 'q' to toggle weapons
 
 # Videos
-	Mapping demo and gameplay:
-		https://youtu.be/JbbWrBtPMYM
-	Dijkstra Test and gameplay:
-		https://youtu.be/TLSb709ZjD0
-	Multi-threading and gameplay:
-		https://youtu.be/tio0EqF15Qk
+Mapping demo and gameplay:
+	https://youtu.be/JbbWrBtPMYM
+
+Dijkstra Test and gameplay:
+	https://youtu.be/TLSb709ZjD0
+	
+Multi-threading and gameplay:
+	https://youtu.be/tio0EqF15Qk
