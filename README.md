@@ -11,9 +11,11 @@ JOGL:
 Game Instructions:
 
 1.  left click to place down triangles (every third click will add the triangle to the map geometry)
+    - If the clock is close enough to a previous vertex, the previous vertex will be referenced (even works on the same triangle)
 2.  hit 'k' to enable pathing graph; left click now places points; every even click will in addition to placing a point, place an edge conecting n to n-1
     - If the click is close enough to a previous point, a new point will not be created and the previous point will be referenced
 3.  hit 'l' to start the game
+    - 'w','a','s', and 'd' controls movement
     - hit 'q' to toggle weapons
 
 # Videos
