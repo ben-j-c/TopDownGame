@@ -85,6 +85,8 @@ public class Shoot implements Runnable
 		
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
+		caps.setSampleBuffers(true);
+		caps.setNumSamples(8);
 		
 		canvas = new GLCanvas(caps);
 		canvas.setSize(1000, 1000);
