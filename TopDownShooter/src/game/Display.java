@@ -62,9 +62,9 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glLineWidth(1.0f);
 
 		gl.glEnable(GL2.GL_BLEND);
-		gl.glEnable(GL2.GL_LINE_SMOOTH);
+		
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-		gl.glEnable(GL2.GL_POLYGON_SMOOTH);
+		
 		
 		
 		gl.glMatrixMode(GL2.GL_PROJECTION);
