@@ -16,7 +16,7 @@ import geo.Vector;
  * Type of entity
  *
  */
-class Entity
+public class Entity
 {
 	public static final int NULL		= 0;
 	public static final int PROJECTILE	= 1;
@@ -26,9 +26,10 @@ class Entity
 	public static final int LASER 		= 32;
 	
 	
-	Vector pos;
-	Vector headTo;
-	Vector v;
+	public Vector pos;
+	public Vector newPos;
+	public Vector headTo;
+	public Vector v;
 	Triangle collide;
 	double life = 10;
 	
