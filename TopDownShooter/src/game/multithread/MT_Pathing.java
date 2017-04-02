@@ -1,6 +1,7 @@
 package game.multithread;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 
 import game.Entity;
 import game.MapWrapper;
@@ -13,6 +14,7 @@ import geo.Vector;
 
 public class MT_Pathing implements Runnable
 {
+	private ExecutorService es;
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
@@ -20,11 +22,45 @@ public class MT_Pathing implements Runnable
 	private MapWrapper mw;
 	private Shoot inst;
 	
-	MT_Pathing(Shoot inst, ArrayList<Entity> ents, MapWrapper mw)
+	public MT_Pathing(Shoot inst, ArrayList<Entity> ents, MapWrapper mw, ExecutorService es)
 	{
 		this.ents = ents;
 		this.mw = mw;
 		this.inst = inst;
+		this.es = es;
+	}
+	
+	/**
+	 * Go through each entity and set its headTo to the next location to get to the player
+	 */
+	public void doCycle()
+	{
+		counter.set(0);
+		progress.set(0);
+		
+		for(Entity e: ents)
+		{
+			e.headTo = null;
+		}
+		
+		synchronized(progress)
+		{
+			for(int i = 0 ; i < Shoot.THREAD_COUNT ; i++)
+				es.execute(this);
+			
+			while(progress.get() < ents.size())
+			{
+				try
+				{
+					progress.wait();	
+				}
+				catch (InterruptedException e1)
+				{
+					e1.printStackTrace();
+				}
+				
+			}
+		}
 	}
 	
 	public void run()

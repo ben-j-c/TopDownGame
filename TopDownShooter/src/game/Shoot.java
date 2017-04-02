@@ -21,6 +21,9 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import game.multithread.MT_EntMovement;
+import game.multithread.MT_Pathing;
+
 /**
  * 
  * @author Ben
@@ -55,7 +58,9 @@ public class Shoot implements Runnable
 	private Display disp;
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
-
+	MT_Pathing mtPathing;
+	MT_EntMovement mtEntMov;
+	
 	//Control objects
 	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	
@@ -103,6 +108,8 @@ public class Shoot implements Runnable
 		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
 		
+		mtPathing = new MT_Pathing(this, ents, mw, es);
+		mtEntMov = new MT_EntMovement(ents, mw, es);
 	}
 	
 	public boolean isGameRunning()
@@ -407,33 +414,7 @@ public class Shoot implements Runnable
 	 */
 	public void stepPathMonsters()
 	{
-		counter.set(0);
-		progress.set(0);
-		
-		for(Entity e: ents)
-		{
-			e.headTo = null;
-		}
-		
-		synchronized(progress)
-		{
-			for(int i = 0 ; i < THREAD_COUNT ; i++)
-				es.execute(this);
-			
-			while(progress.get() < ents.size())
-			{
-				try
-				{
-					progress.wait();	
-				}
-				catch (InterruptedException e1)
-				{
-					e1.printStackTrace();
-				}
-				
-			}
-			
-		}
+		mtPathing.doCycle();
 	}
 	
 	/**
@@ -441,46 +422,7 @@ public class Shoot implements Runnable
 	 */
 	public void stepMoveMonsters()
 	{
-		for(Entity e : ents)
-		{
-			if(e.is(Entity.BODY))
-			{	
-				e.v = e.headTo.sub(e.pos).unitize();
-				e.v.scaleset(PLAYER_SPEED*MONST_SPEED);
-				Vector nl = e.pos.add(e.v);
-				Vector nv = new Vector(e.v);
-				
-				for(Entity f : ents)
-				{	
-					double skew = e.pos.skew(f.pos);
-					if(f != e && skew < MONST_SIZE)
-					{
-						if(f.is(Entity.BODY))
-						{
-							Vector dir = nl.sub(f.pos);	
-							nv.addset((dir.scale(0.5/(skew*skew))).scale(PLAYER_SPEED*MONST_SPEED));
-						}
-					}
-				}
-				nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*MONST_SPEED));
-				BlockingVector block = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo);
-				
-				if(block.block == null || block.t > 1)
-				{
-					e.pos.set(nl);
-				}
-				else
-				{		
-					do
-					{
-						nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
-						block = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo);				
-					}while(block.block != null && block.t < 1 && !Triangle.tooClose(e.pos, MONST_SIZE*0.1, mw.gameMap.geo));
-					
-					e.pos.set(nl);
-				}
-			}
-		}
+		mtEntMov.doCycle();
 	}
 	/**
 	 * Incrementally alter the games state.

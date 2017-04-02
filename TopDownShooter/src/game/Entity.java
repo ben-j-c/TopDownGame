@@ -40,6 +40,7 @@ public class Entity
 	{
 		TYPE = t;
 		pos = new Vector();
+		newPos = new Vector();
 		v = new Vector();
 		headTo = new Vector();
 	}
