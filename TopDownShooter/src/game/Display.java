@@ -147,7 +147,7 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glBegin(GL2.GL_TRIANGLES);
 
 
-		for(Triangle t : inst.gameMap.geo)
+		for(Triangle t : inst.mw.gameMap.geo)
 		{
 			gl.glNormal3d(0, 0, 1);
 			gl.glVertex3d(t.a.x, t.a.y, SLAB_HEIGHT);
@@ -159,14 +159,14 @@ public class Display  extends JFrame implements GLEventListener
 
 		gl.glEnd();
 
-		for(Triangle t : inst.gameMap.geo)
+		for(Triangle t : inst.mw.gameMap.geo)
 		{
 			drawWalls(gl, t);
 		}
 		
 		gl.glBegin(GL2.GL_LINES);
 		gl.glNormal3d(0, 0, 1);
-		for(Triangle t : inst.gameMap.geo)
+		for(Triangle t : inst.mw.gameMap.geo)
 		{
 			gl.glVertex3d(t.a.x, t.a.y, SLAB_HEIGHT);
 			gl.glVertex3d(t.b.x, t.b.y, SLAB_HEIGHT);
@@ -212,7 +212,7 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glBegin(GL.GL_LINES);
 		gl.glNormal3d(0, 0, 1);
 		gl.glColor3d(0.5, 0.5, 0.5);
-		for(Dijkstra.Edge e : inst.gameMap.desc.getEdges())
+		for(Dijkstra.Edge e : inst.mw.gameMap.desc.getEdges())
 		{
 			gl.glVertex2d(e.a.x, e.a.y);
 			gl.glVertex2d(e.b.x, e.b.y);
@@ -221,7 +221,7 @@ public class Display  extends JFrame implements GLEventListener
 
 		gl.glBegin(GL.GL_POINTS);
 		gl.glColor3d(0.5, 0, 1);
-		for(Vector v : inst.gameMap.desc.getNodes())
+		for(Vector v : inst.mw.gameMap.desc.getNodes())
 		{
 			gl.glVertex2d(v.x, v.y);
 		}
@@ -231,7 +231,7 @@ public class Display  extends JFrame implements GLEventListener
 
 		gl.glBegin(GL.GL_LINES);
 		gl.glColor3d(0.5, 0.5, 0.5);
-		for(Dijkstra.Edge e : inst.descWithPlayer.getEdges())
+		for(Dijkstra.Edge e : inst.mw.descWithPlayer.getEdges())
 		{
 			gl.glVertex2d(e.a.x, e.a.y);
 			gl.glVertex2d(e.b.x, e.b.y);
@@ -240,7 +240,7 @@ public class Display  extends JFrame implements GLEventListener
 
 		gl.glBegin(GL.GL_POINTS);
 		gl.glColor3d(0.5, 0, 1);
-		for(Vector v : inst.descWithPlayer.getNodes())
+		for(Vector v : inst.mw.descWithPlayer.getNodes())
 		{
 			gl.glVertex2d(v.x, v.y);
 		}

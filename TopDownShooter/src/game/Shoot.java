@@ -69,9 +69,9 @@ public class Shoot implements Runnable
 	protected Entity player = new Entity(Entity.SOLID);
 	protected ArrayList<Entity> ents = new ArrayList<Entity>();
 	KeyList keys = new KeyList();
-	protected Map gameMap = new Map();
+	
 	protected ArrayList<Vector> points = new ArrayList<Vector>();	
-	protected Dijkstra.Description descWithPlayer = new Dijkstra.Description();
+	MapWrapper mw = new MapWrapper();
 	
 	//Interface objects
 	protected ControlMouse mcontrol = new ControlMouse(this);
@@ -133,7 +133,7 @@ public class Shoot implements Runnable
 	
 	public Vector insideGeometry(Vector t)
 	{	
-		for(Triangle tria : gameMap.geo)
+		for(Triangle tria : mw.gameMap.geo)
 		{
 			Vector at = t.sub(tria.a);
 			Vector bt = t.sub(tria.b);
@@ -230,7 +230,7 @@ public class Shoot implements Runnable
 		if(player.life <= 0)
 		{
 			ents.clear();
-			descWithPlayer = new Dijkstra.Description();
+			mw.descWithPlayer = new Dijkstra.Description();
 			player.pos.set(0,0);
 			
 			return false;
@@ -283,7 +283,7 @@ public class Shoot implements Runnable
 	{
 		Vector nl = player.pos.add(player.v);
 		
-		BlockingVector block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);
+		BlockingVector block = Triangle.calcIntersect(player.pos, nl, mw.gameMap.geo);
 		if(block.block == null || block.t > 1)
 		{
 			player.pos.addset(player.v);
@@ -294,7 +294,7 @@ public class Shoot implements Runnable
 			do
 			{
 				nl = player.pos.add(nl.sub(player.pos).projectOnto(block.block));
-				block = Triangle.calcIntersect(player.pos, nl, gameMap.geo);				
+				block = Triangle.calcIntersect(player.pos, nl, mw.gameMap.geo);				
 			}while(block.block != null && block.t < 1);
 			player.pos.set(nl);
 		}
@@ -308,9 +308,9 @@ public class Shoot implements Runnable
 		ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
 		extraNodes.add(player.pos);
 		
-		for(Vector v: gameMap.desc.getNodes())
+		for(Vector v: mw.gameMap.desc.getNodes())
 		{
-			boolean canSee = Triangle.clearline(player.pos, v, gameMap.geo);
+			boolean canSee = Triangle.clearline(player.pos, v, mw.gameMap.geo);
 			
 			if(canSee)
 			{
@@ -318,7 +318,7 @@ public class Shoot implements Runnable
 			}
 		}
 		
-		descWithPlayer = new Dijkstra.Description(gameMap.desc, extraNodes, extraEdges);
+		mw.descWithPlayer = new Dijkstra.Description(mw.gameMap.desc, extraNodes, extraEdges);
 	}
 	/**
 	 * Move all projectiles
@@ -330,7 +330,7 @@ public class Shoot implements Runnable
 			if(e.is(Entity.PROJECTILE))
 			{
 				Vector nl = e.pos.add(e.v);
-				double t = Triangle.calcIntersect(e.pos, nl, gameMap.geo).t;
+				double t = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo).t;
 				
 				if(t > 1)
 				{
@@ -463,7 +463,7 @@ public class Shoot implements Runnable
 					}
 				}
 				nl = e.pos.add(nv.unit().scale(PLAYER_SPEED*MONST_SPEED));
-				BlockingVector block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);
+				BlockingVector block = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo);
 				
 				if(block.block == null || block.t > 1)
 				{
@@ -474,8 +474,8 @@ public class Shoot implements Runnable
 					do
 					{
 						nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
-						block = Triangle.calcIntersect(e.pos, nl, gameMap.geo);				
-					}while(block.block != null && block.t < 1 && !Triangle.tooClose(e.pos, MONST_SIZE*0.1, gameMap.geo));
+						block = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo);				
+					}while(block.block != null && block.t < 1 && !Triangle.tooClose(e.pos, MONST_SIZE*0.1, mw.gameMap.geo));
 					
 					e.pos.set(nl);
 				}
@@ -514,7 +514,7 @@ public class Shoot implements Runnable
 		
 		//BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
 		
-		boolean canSee = Triangle.clearline(e.pos, pos, gameMap.geo);
+		boolean canSee = Triangle.clearline(e.pos, pos, mw.gameMap.geo);
 		
 		if(canSee)
 		{
@@ -524,7 +524,7 @@ public class Shoot implements Runnable
 		
 		for(Entity other :ents)
 		{
-			if(other.headTo != null && other.pos.sub(e.pos).magsqr() < 4*MONST_SIZE*MONST_SIZE && Triangle.clearline(e.pos, other.headTo, gameMap.geo))
+			if(other.headTo != null && other.pos.sub(e.pos).magsqr() < 4*MONST_SIZE*MONST_SIZE && Triangle.clearline(e.pos, other.headTo, mw.gameMap.geo))
 			{
 				return other.headTo.copy();
 			}
@@ -535,9 +535,9 @@ public class Shoot implements Runnable
 		ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
 		extraNodes.add(e.pos);
 		
-		for(Vector v: gameMap.desc.getNodes())
+		for(Vector v: mw.gameMap.desc.getNodes())
 		{
-			canSee = Triangle.clearline(e.pos, v, gameMap.geo);
+			canSee = Triangle.clearline(e.pos, v, mw.gameMap.geo);
 			
 			if(canSee)
 			{
@@ -545,7 +545,7 @@ public class Shoot implements Runnable
 			}
 		}
 		
-		Dijkstra.Description temp = new Dijkstra.Description(descWithPlayer, extraNodes, extraEdges);
+		Dijkstra.Description temp = new Dijkstra.Description(mw.descWithPlayer, extraNodes, extraEdges);
 		
 		ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
 		
@@ -571,7 +571,7 @@ public class Shoot implements Runnable
 			
 			temp.pos.set(player.pos);
 			temp.v.set(translateToReal(x, y));//(2*x - canvas.getWidth())/canvas.getWidth() + player.pos.x, -(2*y - canvas.getHeight())/canvas.getHeight() + player.pos.y); //for laser, the velocity is actually just another point
-			double t = Triangle.calcIntersect(temp.pos, temp.v, gameMap.geo).t; // find the closest intersection of pos -> v
+			double t = Triangle.calcIntersect(temp.pos, temp.v, mw.gameMap.geo).t; // find the closest intersection of pos -> v
 			temp.v.set(temp.pos.add(temp.v.sub(temp.pos).scale(t))); //v := (v-pos)*t + pos
 			
 			ArrayList<Entity> to_remove = new ArrayList<Entity>();
@@ -668,7 +668,7 @@ public class Shoot implements Runnable
 	protected void openMapDialog()
 	{
 		points.clear();
-		gameMap.opendialog();
+		mw.gameMap.opendialog();
 		offset = new Vector(0,0);
 	}
 	

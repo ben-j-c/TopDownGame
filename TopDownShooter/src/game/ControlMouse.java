@@ -10,7 +10,7 @@ import geo.Vector;
 
 public class ControlMouse implements MouseListener
 {
-	Map gameMap;
+	MapWrapper mw;
 	ArrayList<Vector> points;
 	Shoot inst;
 	KeyList keys;
@@ -18,7 +18,7 @@ public class ControlMouse implements MouseListener
 	ControlMouse(Shoot inst)
 	{
 		this.inst = inst;
-		this.gameMap = inst.gameMap;
+		this.mw = inst.mw;
 		this.points = inst.points;
 		this.keys = inst.keys;
 	}
@@ -47,21 +47,21 @@ public class ControlMouse implements MouseListener
 			{
 				Vector temp = inst.translateToReal(e.getX(), e.getY());
 				
-				Vector temp2 = gameMap.desc.getSkewed(temp, Shoot.SNAP_DISTANCE*Shoot.SNAP_DISTANCE);
+				Vector temp2 = mw.gameMap.desc.getSkewed(temp, Shoot.SNAP_DISTANCE*Shoot.SNAP_DISTANCE);
 				if(temp2 == null)
 				{
 					points.add(temp);
-					gameMap.desc.addNode(temp);
+					mw.gameMap.desc.addNode(temp);
 				}
 				else
 				{
 					points.add(temp2);
-					gameMap.desc.addNode(temp2);
+					mw.gameMap.desc.addNode(temp2);
 				}
 				
 				if(points.size() == 2)
 				{
-					gameMap.desc.addEdge(points.remove(0), points.remove(0));
+					mw.gameMap.desc.addEdge(points.remove(0), points.remove(0));
 					points.clear();
 				}
 			}
@@ -69,7 +69,7 @@ public class ControlMouse implements MouseListener
 			{
 				Vector temp = inst.translateToReal(e.getX(), e.getY());
 				
-				for(Triangle t: gameMap.geo)
+				for(Triangle t: mw.gameMap.geo)
 				{
 					Vector temp1 = t.skew(temp, Shoot.SNAP_DISTANCE);
 					if(temp1 != null)
@@ -87,7 +87,7 @@ public class ControlMouse implements MouseListener
 					Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
 					if(!t.isFlat())
 					{
-						gameMap.geo.add(t);
+						mw.gameMap.geo.add(t);
 					}
 				}
 			}
