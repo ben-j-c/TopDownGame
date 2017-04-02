@@ -15,8 +15,6 @@ public class ControlMouse implements MouseListener
 	Shoot inst;
 	KeyList keys;
 	
-	private boolean PLACE_GRAPH = false;
-	
 	ControlMouse(Shoot inst)
 	{
 		this.inst = inst;
@@ -45,7 +43,7 @@ public class ControlMouse implements MouseListener
 	{
 		if(!inst.GAME_STARTED)
 		{
-			if(PLACE_GRAPH)
+			if(inst.PLACE_GRAPH)
 			{
 				Vector temp = inst.translateToReal(e.getX(), e.getY());
 				
