@@ -61,7 +61,7 @@ public class Shoot implements Runnable
 	
 	//Control variables
 	protected boolean GAME_STARTED = false;
-	private boolean PLACE_GRAPH = false;
+	protected boolean PLACE_GRAPH = false;
 	private long gametime = 0;
 	protected Vector offset = new Vector(0,0);
 	
