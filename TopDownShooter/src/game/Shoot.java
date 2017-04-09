@@ -22,7 +22,6 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 import game.multithread.MT_EntMovement;
-import game.multithread.MT_Pathing;
 
 /**
  * 
