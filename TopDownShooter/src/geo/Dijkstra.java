@@ -1,5 +1,7 @@
 package geo;
 
+import util.dstruct.Queue;
+
 /**
  * 
  * @author Ben
@@ -156,6 +158,37 @@ public final class Dijkstra
 		}
 	}
 	
+	static class Node implements Comparable<Node>
+	{
+		Vector pos;
+		Double dist;
+		
+		public Node(Vector v, double d)
+		{
+			pos = v;
+			dist = d;
+		}
+		
+		@Override
+		public int compareTo(Node n)
+		{
+			return (dist > n.dist)? 1: (dist == n.dist) ? 0:-1;
+		}
+		
+		public boolean equals(Object o)
+		{
+			Node n = (Node) o;
+			
+			return pos.equals(n.pos);
+		}
+		
+		public String toString()
+		{
+			return "||NODE: " + pos + "\t" + dist + "||";
+		}
+	}
+	
+	
 	
 	/**
 	 * A (horrid) implementation of Dijkstra's shortest path algorithm with an alteration to use Vectors as nodes, and the distances between them to be the distances. 
@@ -170,36 +203,31 @@ public final class Dijkstra
 		
 		nodes.addAll(desc.getNodes());
 		java.util.ArrayList<Vector> path = new java.util.ArrayList<Vector>();
+		Queue<Node> distances = new Queue<Node>();
 		java.util.TreeMap<Vector, Double> dist = new java.util.TreeMap<Vector, Double>();
 		java.util.TreeMap<Vector, Vector> prev = new java.util.TreeMap<Vector, Vector>();
 		for(Vector v : nodes)
 		{
-			dist.put(v, 1234567890.0);
+			if(v != start)
+			{
+				distances.addData(new Node(v, 1234567890.0));
+				dist.put(v, 1234567890.0);
+			}
 			prev.put(v, null);
 		}
+		distances.addData(new Node(start, 0.0));
 		dist.put(start, 0.0);
 		
 		while(!nodes.isEmpty())
-		{
-			Vector u;
+		{	
+			Node u = null;
 			{
-				double low = 1234567890.0;
-				Vector lowv = null;
-				for(Vector temp : nodes)
-				{
-					
-					if(dist.get(temp) < low)
-					{
-						lowv = temp;
-						low = dist.get(temp);
-					}
-				}
-				u = lowv;
+				u = distances.removeData();
 			}
 			
 			try
 			{
-				if(u.equals(end))
+				if(u.pos.equals(end))
 					break;
 			}
 			catch(NullPointerException e)
@@ -208,19 +236,22 @@ public final class Dijkstra
 			}
 			
 			
-			java.util.List<Vector> neighbor = desc.getNeighbor(u);
-			
-			nodes.remove(u);
+			java.util.List<Vector> neighbor = desc.getNeighbor(u.pos);
+			nodes.remove(u.pos);
 			
 			for(Vector v : neighbor)
 			{
-				double alt = dist.get(u) + v.skew(u);
-				Double distMapped = dist.get(v);
+				Node nodev = distances.getData(new Node(v, 0.0));
 				
-				if(alt < distMapped)
+				if(nodev != null)
 				{
-					dist.put(v, alt);
-					prev.put(v, u);
+					double alt = u.dist + v.skew(u.pos);
+					if(alt < nodev.dist)
+					{
+						distances.removeData(new Node(v, 0.0));
+						distances.addData(new Node(v, alt));
+						prev.put(v, u.pos);
+					}
 				}
 				
 			}
