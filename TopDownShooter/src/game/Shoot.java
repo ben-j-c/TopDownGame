@@ -32,7 +32,7 @@ import game.multithread.MT_Pathing;
 public class Shoot implements Runnable
 {
 	//Constants
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	private static final long serialVersionUID = 1L;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.005;
@@ -58,7 +58,7 @@ public class Shoot implements Runnable
 	private Display disp;
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
-	MT_Pathing mtPathing;
+	//MT_Pathing mtPathing;
 	MT_EntMovement mtEntMov;
 	
 	//Control objects
@@ -87,7 +87,7 @@ public class Shoot implements Runnable
 	
 	Shoot()
 	{
-		
+		System.out.printf("THREAD_COUNT:%4d\n", THREAD_COUNT);
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
 		caps.setSampleBuffers(true);
@@ -108,8 +108,8 @@ public class Shoot implements Runnable
 		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
 		
-		mtPathing = new MT_Pathing(this, ents, mw, es);
-		mtEntMov = new MT_EntMovement(ents, mw, es);
+		//mtPathing = new MT_Pathing(this, ents, mw, es);
+		mtEntMov = new MT_EntMovement(this, ents, mw, es);
 	}
 	
 	public boolean isGameRunning()
@@ -389,7 +389,7 @@ public class Shoot implements Runnable
 	 */
 	public void stepSpawnMonster()
 	{
-		if(countMonsters() < MAX_MONST && Math.random() < SPAWN_PROB)
+		for(;countMonsters() < MAX_MONST && Math.random() < SPAWN_PROB;)
 		{
 			double theta = Math.random()*Math.PI*2;
 			double r = SPAWN_DIST + Math.random()*SPAWN_DIST_VARIATION;
@@ -414,7 +414,7 @@ public class Shoot implements Runnable
 	 */
 	public void stepPathMonsters()
 	{
-		mtPathing.doCycle();
+		//mtPathing.doCycle();
 	}
 	
 	/**
