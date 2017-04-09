@@ -204,40 +204,29 @@ public final class Dijkstra
 		nodes.addAll(desc.getNodes());
 		java.util.ArrayList<Vector> path = new java.util.ArrayList<Vector>();
 		Queue<Node> distances = new Queue<Node>();
-		java.util.TreeMap<Vector, Double> dist = new java.util.TreeMap<Vector, Double>();
 		java.util.TreeMap<Vector, Vector> prev = new java.util.TreeMap<Vector, Vector>();
 		for(Vector v : nodes)
 		{
 			if(v != start)
 			{
 				distances.addData(new Node(v, 1234567890.0));
-				dist.put(v, 1234567890.0);
 			}
 			prev.put(v, null);
 		}
 		distances.addData(new Node(start, 0.0));
-		dist.put(start, 0.0);
 		
-		while(!nodes.isEmpty())
+		while(distances.getSize() > 0)
 		{	
 			Node u = null;
 			{
 				u = distances.removeData();
 			}
 			
-			try
-			{
-				if(u.pos.equals(end))
-					break;
-			}
-			catch(NullPointerException e)
-			{
+			if(u.pos.equals(end))
 				break;
-			}
 			
 			
 			java.util.List<Vector> neighbor = desc.getNeighbor(u.pos);
-			nodes.remove(u.pos);
 			
 			for(Vector v : neighbor)
 			{

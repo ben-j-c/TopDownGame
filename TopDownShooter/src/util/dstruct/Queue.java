@@ -75,6 +75,9 @@ public class Queue <T extends Comparable<? super T>>
 	
 	private Node<T> removeNode(Node<T> head, T data)
 	{
+		if(head == null)
+			return null;
+		
 		if(head.data.equals(data))
 		{
 			return head.next;
