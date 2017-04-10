@@ -79,6 +79,8 @@ public class Map
 	 */
 	private void loadDesc(File descFile) throws Exception
 	{	
+		if(!descFile.exists())
+			return;
 		desc = new Dijkstra.Description();
 		
 		Scanner s = new Scanner(descFile);

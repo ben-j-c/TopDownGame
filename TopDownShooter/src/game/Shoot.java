@@ -34,7 +34,7 @@ public class Shoot implements Runnable
 	public static final boolean DEBUG = true;
 	private static final long serialVersionUID = 1L;
 	public static final double SNAP_DISTANCE = 0.025;
-	public static final double PLAYER_SPEED = 0.005;
+	public static final double PLAYER_SPEED = 0.009;
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int MAX_MONST = 500;
 	public static final double MONST_SPEED = 0.8;
