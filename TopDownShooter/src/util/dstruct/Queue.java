@@ -1,15 +1,22 @@
 package util.dstruct;
 
+
+/**
+ * 
+ * @author Ben
+ *
+ * @param <T> The type of the data being stored in the queue
+ */
 public class Queue <T extends Comparable<? super T>>
 {
-	int size;
+	private volatile int size;
 	private Node<T> head = null;
 	
 	private static class Node <T extends Comparable<? super T>> implements Comparable<Node<T>>
 	{
 		Node<T> next = null;
 		T data = null;
-
+		
 		@Override
 		public int compareTo(Node<T> n)
 		{
@@ -17,7 +24,7 @@ public class Queue <T extends Comparable<? super T>>
 		}
 	}
 	
-	public void addData(T data)
+	public synchronized void  addData(T data)
 	{
 		Node<T> n = new Node<T>();
 		n.data = data;
@@ -26,7 +33,7 @@ public class Queue <T extends Comparable<? super T>>
 		size++;
 	}
 	
-	public T removeData()
+	public synchronized T removeData()
 	{
 		if(head == null)
 		{
@@ -38,18 +45,31 @@ public class Queue <T extends Comparable<? super T>>
 		return returner;
 	}
 	
-	public void removeData(T data)
+	public synchronized void removeData(T data)
 	{
 		head = removeNode(head, data);
+		size--;
 	}
-	public T getData(T data)
+	
+	public synchronized T removeByIndex(int idx)
+	{
+		Node<T> get = new Node<T>();
+		head = removeByIndex(head, get, idx);
+		
+		if(get.data == null)
+			return null;
+		size--;
+		return get.data;
+	}
+	
+	public synchronized T getData(T data)
 	{
 		Node<T> n = getNodeWData(head, data);
 		if(n == null)
 			return null;
 		return n.data;
 	}
-
+	
 	public int getSize()
 	{
 		return size;
@@ -70,6 +90,24 @@ public class Queue <T extends Comparable<? super T>>
 		{
 			n.next = head;
 			return n;
+		}
+	}
+	
+	private Node<T> removeByIndex(Node<T> head, Node<T> get, int idx)
+	{
+		if(head == null)
+		{
+			return null;
+		}
+		else if(idx == 0)
+		{
+			get.data = head.data;
+			return head.next;
+		}
+		else
+		{
+			head.next = removeByIndex(head.next, get, idx - 1);
+			return head;
 		}
 	}
 	
@@ -102,7 +140,7 @@ public class Queue <T extends Comparable<? super T>>
 	public String toString()
 	{
 		String s = "{";
-		Node head = this.head;
+		Node<T> head = this.head;
 		while(head != null)
 		{
 			s += head.data + " , ";
