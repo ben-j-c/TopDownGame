@@ -24,6 +24,11 @@ public class Queue <T extends Comparable<? super T>>
 		}
 	}
 	
+	/**
+	 * Add the data into the queue in a natural order.
+	 * Uses .compareTo() to check order.
+	 * @param data the data you want to add to the queue
+	 */
 	public synchronized void  addData(T data)
 	{
 		Node<T> n = new Node<T>();
@@ -32,7 +37,10 @@ public class Queue <T extends Comparable<? super T>>
 		head = addNode(head, n);
 		size++;
 	}
-	
+	/**
+	 * Get and remove the data at the front of the queue.
+	 * @return the data that was at the head of the queue
+	 */
 	public synchronized T removeData()
 	{
 		if(head == null)
@@ -44,13 +52,22 @@ public class Queue <T extends Comparable<? super T>>
 		size--;
 		return returner;
 	}
-	
+	/**
+	 * Remove the first occurrence of data in the list.
+	 * Checks data equivalence with .equals()
+	 * @param data
+	 */
 	public synchronized void removeData(T data)
 	{
 		head = removeNode(head, data);
 		size--;
 	}
 	
+	/**
+	 * Remove a specific index from the queue.
+	 * @param idx the index of the element to remove
+	 * @return
+	 */
 	public synchronized T removeByIndex(int idx)
 	{
 		Node<T> get = new Node<T>();
@@ -61,7 +78,12 @@ public class Queue <T extends Comparable<? super T>>
 		size--;
 		return get.data;
 	}
-	
+	/**
+	 * Gets the first occurrence of data in the queue.
+	 * Checks data equivalence with .equals()
+	 * @param data
+	 * @return
+	 */
 	public synchronized T getData(T data)
 	{
 		Node<T> n = getNodeWData(head, data);
@@ -75,6 +97,12 @@ public class Queue <T extends Comparable<? super T>>
 		return size;
 	}
 	
+	/**
+	 * Recursively go down the list and find where this node fits in.
+	 * @param head recursive head
+	 * @param n node to add
+	 * @return recursive new head
+	 */
 	private Node<T> addNode(Node<T> head, Node<T> n)
 	{
 		if(head == null)
@@ -92,7 +120,13 @@ public class Queue <T extends Comparable<? super T>>
 			return n;
 		}
 	}
-	
+	/**
+	 * Recursively go down the list decrementing idx, until you reach zero, or the end of the list.  Then return the appropriate data.
+	 * @param head
+	 * @param get
+	 * @param idx
+	 * @return
+	 */
 	private Node<T> removeByIndex(Node<T> head, Node<T> get, int idx)
 	{
 		if(head == null)
@@ -111,6 +145,12 @@ public class Queue <T extends Comparable<? super T>>
 		}
 	}
 	
+	/**
+	 * recursively go down the list looking for data and remove it by returning the next node.
+	 * @param head the recursive head
+	 * @param data the data to remove
+	 * @return recursive next node
+	 */
 	private Node<T> removeNode(Node<T> head, T data)
 	{
 		if(head == null)
@@ -123,7 +163,12 @@ public class Queue <T extends Comparable<? super T>>
 		head.next = removeNode(head.next, data);
 		return head;
 	}
-	
+	/**
+	 * Get the first node that when you compare the data, they are .equals() to each other.
+	 * @param head
+	 * @param data
+	 * @return
+	 */
 	private Node<T> getNodeWData(Node<T> head, T data)
 	{
 		if(head == null)
@@ -139,15 +184,18 @@ public class Queue <T extends Comparable<? super T>>
 	
 	public String toString()
 	{
-		String s = "{";
+		StringBuilder br = new StringBuilder(50);
+		br.append("{ ");
 		Node<T> head = this.head;
 		while(head != null)
 		{
-			s += head.data + " , ";
+			br.append(head.data);
+			br.append(", ");
 			head = head.next;
 		}
-		
-		return s + "}";
+		br.deleteCharAt(br.length() - 2);
+		br.append('}');
+		return br.toString();
 	}
 	
 }
