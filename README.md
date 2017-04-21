@@ -35,6 +35,9 @@ Saving/Loading a map:
 	-  Hitting "save" will overwrite any map with the same name.
 
 # Videos
+Current state of the game:
+	https://youtu.be/UF0g8ZcNzSk
+
 Mapping demo and gameplay:
 	https://youtu.be/JbbWrBtPMYM
 
