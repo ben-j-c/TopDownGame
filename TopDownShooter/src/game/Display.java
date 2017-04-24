@@ -257,7 +257,7 @@ public class Display  extends JFrame implements GLEventListener
 
 		gl.glColor4d(0.75, 0.25, 0.25, 0.5);
 
-		gl.glNormal3d(0, 0, 0.5);
+		gl.glNormal3d(0, 0, 1);
 		gl.glVertex3d(-1, 1, 0.5);
 		gl.glVertex3d(-1, 0.95, 0.5);
 		gl.glVertex3d((inst.player.life - 5.0)/5.0 , 0.95, 0.5);
@@ -307,8 +307,8 @@ public class Display  extends JFrame implements GLEventListener
 			gl.glVertex2d(inst.player.pos.x, inst.player.pos.y);
 			drawCube(gl, 0.005, inst.player.pos.x, inst.player.pos.y, 0.01);
 
-			gl.glBegin(gl.GL_LINES);
-
+			gl.glBegin(GL2.GL_LINES);
+			gl.glNormal3d(0, 0, 1);
 			for(Entity e : inst.ents)
 			{
 				if((e.TYPE & Entity.LASER) != 0)
