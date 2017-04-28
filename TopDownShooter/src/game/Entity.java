@@ -22,6 +22,7 @@ public class Entity
 	public static final int PROJECTILE	= 1;
 	public static final int SOLID 		= 2;
 	public static final int HITBOX 		= 4;
+	public static final int MONST 		= 8;
 	public static final int BODY 		= 16;
 	public static final int LASER 		= 32;
 	
@@ -31,12 +32,12 @@ public class Entity
 	public Vector headTo;
 	public Vector v;
 	Triangle collide;
-	double life = 10;
+	public double life = 10;
 	
 	double r, g, b;
 	
 	int TYPE;
-	Entity(int t)
+	public Entity(int t)
 	{
 		TYPE = t;
 		pos = new Vector();
@@ -58,6 +59,4 @@ public class Entity
 	{
 		return (this.TYPE & TYPE) != 0;
 	}
-	
-	
 }

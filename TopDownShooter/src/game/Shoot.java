@@ -22,6 +22,7 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 import game.multithread.MT_EntMovement;
+import game.multithread.MT_WeaponHit;
 
 /**
  * 
@@ -36,7 +37,7 @@ public class Shoot implements Runnable
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.009;
 	public static final double PARTICLE_SPEED = 0.02;
-	public static final int MAX_MONST = 500;
+	public static final int MAX_MONST = 1000;
 	public static final double MONST_SPEED = 0.8;
 	public static final double MONST_SIZE = 0.01;
 	public static final double SPAWN_PROB = 1;
@@ -59,6 +60,7 @@ public class Shoot implements Runnable
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	//MT_Pathing mtPathing;
 	MT_EntMovement mtEntMov;
+	MT_WeaponHit mtWepHit;
 	
 	//Control objects
 	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
@@ -107,7 +109,7 @@ public class Shoot implements Runnable
 		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
 		
-		//mtPathing = new MT_Pathing(this, ents, mw, es);
+		mtWepHit = new MT_WeaponHit(ents, mw, es, toRemove);
 		mtEntMov = new MT_EntMovement(this, ents, mw, es);
 	}
 	
@@ -272,7 +274,7 @@ public class Shoot implements Runnable
 		
 		for(Entity e : ents)
 		{
-			if((e.TYPE & Entity.BODY) != 0)
+			if(e.is(Entity.MONST))
 			{
 				if(!DEBUG && e.pos.skew(player.pos) <= MONST_SIZE)
 				{
@@ -331,53 +333,7 @@ public class Shoot implements Runnable
 	 */
 	public void stepCalculateProjectileHits()
 	{
-		for(Entity e : ents)
-		{
-			if(e.is(Entity.PROJECTILE))
-			{
-				Vector nl = e.pos.add(e.v);
-				double t = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo).t;
-				
-				if(t > 1)
-				{
-					e.pos.addset(e.v);
-				}
-				else
-				{
-					toRemove.add(e);
-				}
-			}
-			
-			if(e.is(Entity.LASER))
-			{
-				if(e.life <= 0)
-				{
-					toRemove.add(e);
-				}
-				else
-				{
-					e.life--;
-				}
-			}
-		}
-		
-		for(Entity e : ents)
-		{
-			if(e.is(Entity.BODY))
-			{
-				for(Entity f : ents)
-				{	
-					double skew = e.pos.skew(f.pos);
-					if(f.is(Entity.PROJECTILE) && f != e && skew < MONST_SIZE)
-					{
-						toRemove.add(f);
-						toRemove.add(e);
-						f.TYPE = Entity.NULL;
-						
-					}
-				}
-			}
-		}
+		mtWepHit.doCycle();
 	}	
 	public void removeEntities()
 	{
@@ -397,7 +353,7 @@ public class Shoot implements Runnable
 			
 			if(insideGeometry(pos) == null)
 			{
-				Entity monster = new Entity(Entity.BODY);
+				Entity monster = new Entity(Entity.MONST | Entity.BODY);
 				monster.pos = pos;
 				monster.r = Math.random()*MONST_R+MONST_R_OFFSET;
 				monster.g = Math.random()*MONST_G+MONST_G_OFFSET;
@@ -417,7 +373,7 @@ public class Shoot implements Runnable
 	}
 	
 	/**
-	 * Look at each entity that is of type Entity.BODY, and move it to e.headTo, without intersecting with any other entity.
+	 * Look at each entity that is of type Entity.MONST, and move it to e.headTo, without intersecting with any other entity.
 	 */
 	public void stepMoveMonsters()
 	{
@@ -519,7 +475,7 @@ public class Shoot implements Runnable
 			
 			for(Entity e : ents)
 			{
-				if((e.TYPE & Entity.BODY) != 0)
+				if(e.is(Entity.MONST))
 				{
 					double cos = e.pos.sub(temp.pos).cos(temp.v.sub(temp.pos));
 					
@@ -553,7 +509,7 @@ public class Shoot implements Runnable
 		int count = 0;
 		for(Entity e: ents)
 		{
-			if((e.TYPE & Entity.BODY) != 0)
+			if(e.is(Entity.MONST))
 				count++;
 		}
 		return count;

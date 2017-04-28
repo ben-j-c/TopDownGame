@@ -110,7 +110,7 @@ public class MT_EntMovement implements Runnable
 	 */
 	public void stepMoveMonster(Entity e)
 	{
-		if(e.is(Entity.BODY))
+		if(e.is(Entity.MONST))
 		{	
 			e.v = e.headTo.sub(e.pos).unitize();
 			
