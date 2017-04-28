@@ -139,45 +139,6 @@ public class Shoot implements Runnable
 		animator.start();
 	}
 	
-	public Vector insideGeometry(Vector t)
-	{	
-		for(Triangle tria : mw.gameMap.geo)
-		{
-			Vector at = t.sub(tria.a);
-			Vector bt = t.sub(tria.b);
-			Vector ct = t.sub(tria.c);
-			
-			
-			double a = tria.ab.cross(at);
-			double b = tria.bc.cross(bt);
-			double c = tria.ca.cross(ct);
-			
-			if(a > 0 && b > 0 && c > 0)
-			{
-				a /= tria.ab.mag();
-				b /= tria.bc.mag();
-				c /= tria.ca.mag();
-				
-				if(a <= b && a <= c)
-				{
-					return tria.ab.copy();
-				}
-				else if(b <= c)
-				{
-					return tria.bc.copy();
-				}
-				else
-				{
-					return tria.ca.copy();
-				}
-			}
-			
-			
-		}
-		
-		return null;
-	}
-	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////RUN FUNCTION/////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -351,7 +312,7 @@ public class Shoot implements Runnable
 			
 			Vector pos = new Vector(player.pos.x + r*Math.cos(theta), player.pos.y + r*Math.sin(theta));
 			
-			if(insideGeometry(pos) == null)
+			if(!Triangle.tooClose(pos, Triangle.DEFAULT_ERROR, mw.gameMap.geo))
 			{
 				Entity monster = new Entity(Entity.MONST | Entity.BODY);
 				monster.pos = pos;
@@ -543,7 +504,7 @@ public class Shoot implements Runnable
 		do 
 		{
 			player.pos = new Vector(Math.random()*2 - 1, Math.random()*2 - 1);
-		}while(insideGeometry(player.pos) != null);
+		}while(Triangle.tooClose(player.pos, Triangle.DEFAULT_ERROR, mw.gameMap.geo));
 		
 		GAME_STARTED = true;
 	}
