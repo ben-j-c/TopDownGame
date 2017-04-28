@@ -395,7 +395,6 @@ public class Shoot implements Runnable
 			this.removeEntities();
 			
 			this.stepSpawnMonster();
-			this.stepPathMonsters();
 			this.stepMoveMonsters();
 		}
 	}
