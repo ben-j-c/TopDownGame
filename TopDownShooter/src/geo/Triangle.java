@@ -1,6 +1,9 @@
 package geo;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.TreeSet;
+
+import geo.Triangle.BlockingVector;
 
 
 /**
@@ -471,5 +474,33 @@ public class Triangle implements Comparable<Triangle>
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Method returns a Vector as close to pos + delta without being inside geo 
+	 * @param pos initial point
+	 * @param delta a direction vector
+	 * @param geo a set of the map geometry
+	 * @return a vector as close to pos + delta
+	 */
+	public static Vector findClosestPos(Vector pos, Vector delta, TreeSet<Triangle> geo)
+	{
+		Vector nl = pos.add(delta);
+		
+		BlockingVector block = Triangle.calcIntersect(pos, nl, geo);
+		if(block.block == null || block.t > 1)
+		{
+			return pos.add(delta);
+		}
+		else
+		{	
+			//Keep projecting onto blocking vector until you are no longer being blocked
+			do
+			{
+				nl = pos.add(nl.sub(pos).projectOnto(block.block));
+				block = Triangle.calcIntersect(pos, nl, geo);				
+			}while(block.block != null && block.t < 1);
+			return nl;
+		}
 	}
 }

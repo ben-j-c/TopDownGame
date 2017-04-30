@@ -131,34 +131,9 @@ public class MT_EntMovement implements Runnable
 					}
 				}
 			}
-			nl = e.pos.add(nv.unit().scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
-			BlockingVector block = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo);
 			
-			if(block.block == null || block.t > 1)
-			{
-				try
-				{	
-					e.newPos.set(nl);
-				}
-				catch(NullPointerException ex)
-				{
-					System.out.println(e.pos);
-					System.out.println(e.v);
-					System.out.println(e.headTo);
-					System.out.println(e);
-					System.exit(1);
-				}
-			}
-			else
-			{		
-				do
-				{
-					nl = e.pos.add(nl.sub(e.pos).projectOnto(block.block));
-					block = Triangle.calcIntersect(e.pos, nl, mw.gameMap.geo);				
-				}while(block.block != null && block.t < 1 && !Triangle.tooClose(e.pos, Shoot.MONST_SIZE*0.1, mw.gameMap.geo));
-				
-				e.newPos.set(nl);
-			}
+			e.v.set(nv.unit().scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+			e.newPos.set(Triangle.findClosestPos(e.pos, e.v, mw.gameMap.geo));
 		}
 	}
 	

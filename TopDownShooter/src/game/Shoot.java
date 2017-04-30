@@ -72,7 +72,7 @@ public class Shoot implements Runnable
 	protected Vector offset = new Vector(0,0);
 	
 	//Game objects
-	protected Entity player = new Entity(Entity.SOLID);
+	protected Entity player = new Entity(Entity.BODY);
 	protected ArrayList<Entity> ents = new ArrayList<Entity>();
 	KeyList keys = new KeyList();
 	
@@ -250,23 +250,7 @@ public class Shoot implements Runnable
 	 */
 	public void stepPlayerPos()
 	{
-		Vector nl = player.pos.add(player.v);
-		
-		BlockingVector block = Triangle.calcIntersect(player.pos, nl, mw.gameMap.geo);
-		if(block.block == null || block.t > 1)
-		{
-			player.pos.addset(player.v);
-		}
-		else
-		{	
-			//Keep projecting onto blocking vector until you are no longer being blocked
-			do
-			{
-				nl = player.pos.add(nl.sub(player.pos).projectOnto(block.block));
-				block = Triangle.calcIntersect(player.pos, nl, mw.gameMap.geo);				
-			}while(block.block != null && block.t < 1);
-			player.pos.set(nl);
-		}
+		player.pos.set(Triangle.findClosestPos(player.pos, player.v, mw.gameMap.geo));
 	}
 	/**
 	 * set the graph with the player to a new graph
