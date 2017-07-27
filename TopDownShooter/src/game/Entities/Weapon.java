@@ -1,18 +1,7 @@
 package game.Entities;
 
-import game.Entity;
-
-public class Weapon extends Entity
+public interface Weapon
 {
-	
-	public Weapon(Entity e)
-	{
-		super(e);
-		// TODO Auto-generated constructor stub
-	}
-	
-	public Weapon(int type)
-	{
-		super(type);
-	}
+	public void fire(int x, int y);
+	public void altFire(int x, int y);
 }

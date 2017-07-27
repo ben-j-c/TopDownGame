@@ -55,6 +55,11 @@ public class Entity
 		TYPE = e.TYPE;
 	}
 	
+	public Entity()
+	{
+		// TODO Auto-generated constructor stub
+	}
+
 	public boolean is(int TYPE)
 	{
 		return (this.TYPE & TYPE) != 0;

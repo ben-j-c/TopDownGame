@@ -267,4 +267,13 @@ public class Vector implements Comparable<Vector>
 			return false;
 					
 	}
+	public Vector clamp(double max)
+	{
+		if(max*max <= this.magsqr())
+		{
+			return this.unit().scale(max);
+		}
+		
+		return this.copy();
+	}
 }

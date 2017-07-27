@@ -122,17 +122,17 @@ public class MT_EntMovement implements Runnable
 			{	
 				Entity f = ents.get(i);
 				double skew = e.pos.skew(f.pos);
-				if(f != e && skew < Shoot.MONST_SIZE)
+				if(f != e && skew < Shoot.MONST_SIZE*4)
 				{
 					if(f.is(Entity.BODY))
 					{
 						Vector dir = nl.sub(f.pos);	
-						nv.addset((dir.scale(Shoot.MONST_SIZE/(skew*skew))).scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+						nv.addset((dir.scale(Shoot.MONST_SIZE*Shoot.MONST_SIZE/(skew*skew))).scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
 					}
 				}
 			}
 			
-			e.v.set(nv.unit().scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+			e.v.set(nv.clamp(Shoot.PLAYER_SPEED*1.5));
 			e.newPos.set(Triangle.findClosestPos(e.pos, e.v, mw.gameMap.geo));
 		}
 	}

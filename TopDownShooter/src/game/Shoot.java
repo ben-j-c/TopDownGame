@@ -11,6 +11,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,7 +30,7 @@ import game.multithread.MT_WeaponHit;
  * @author Ben
  * The game class includes all the rendering mouse handling
  */
-public class Shoot implements Runnable
+public class Shoot
 {
 	//Constants
 	public static final boolean DEBUG = true;
@@ -52,6 +53,7 @@ public class Shoot implements Runnable
 	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 	
 	//Service objects
+	public static final Random r = new Random(); 
 	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	protected GLCanvas canvas;
@@ -137,47 +139,6 @@ public class Shoot implements Runnable
 	public void startGame()
 	{
 		animator.start();
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////RUN FUNCTION/////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	public void run()
-	{	
-		while(counter.get() < ents.size())
-		{
-			Entity e = null;
-			synchronized(counter)
-			{
-				if(counter.get() < ents.size())
-				{
-					e = ents.get(counter.getAndIncrement());
-				}
-				else
-				{
-					break;
-				}
-			}
-			
-			e.headTo = getNextMoveTo(e);
-			
-			synchronized(progress)
-			{
-				progress.incrementAndGet();
-			}
-		}
-		
-		
-		
-		synchronized(progress)
-		{
-			if(progress.get() >= ents.size())
-			{
-				progress.notify();
-			}
-			
-		}
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -344,61 +305,6 @@ public class Shoot implements Runnable
 		}
 	}
 	
-	/**
-	 * Calculates by Dijkstra's algorithm, the best route a entity should follow to get to the player.
-	 * @param e The entity in question
-	 * @return The point that the entity in question should move to
-	 */
-	private Vector getNextMoveTo(Entity e)
-	{
-		Vector pos = player.pos;
-		
-		//BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
-		
-		boolean canSee = Triangle.clearline(e.pos, pos, mw.gameMap.geo);
-		
-		if(canSee)
-		{
-			return pos.copy();
-		}
-		
-		
-		for(Entity other :ents)
-		{
-			if(other.headTo != null && other.pos.sub(e.pos).magsqr() < 4*MONST_SIZE*MONST_SIZE && Triangle.clearline(e.pos, other.headTo, mw.gameMap.geo))
-			{
-				return other.headTo.copy();
-			}
-		}
-		
-		
-		ArrayList<Vector> extraNodes = new ArrayList<Vector>();
-		ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
-		extraNodes.add(e.pos);
-		
-		for(Vector v: mw.gameMap.desc.getNodes())
-		{
-			canSee = Triangle.clearline(e.pos, v, mw.gameMap.geo);
-			
-			if(canSee)
-			{
-				extraEdges.add(new Dijkstra.Edge(e.pos, v));
-			}
-		}
-		
-		Dijkstra.Description temp = new Dijkstra.Description(mw.descWithPlayer, extraNodes, extraEdges);
-		
-		ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, player.pos, temp);
-		
-		if(v.size() > 1)
-			return v.get(v.size() - 2);
-		else
-			return v.get(0);
-				
-		
-		
-		
-	}
 	/**
 	 * 
 	 * @param x the location of the mouse on screen
