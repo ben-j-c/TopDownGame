@@ -58,8 +58,6 @@ public class Shoot
 	private FPSAnimator animator;
 	protected GLCanvas canvas;
 	private Display disp;
-	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
-	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	//MT_Pathing mtPathing;
 	MT_EntMovement mtEntMov;
 	MT_WeaponHit mtWepHit;
@@ -194,11 +192,7 @@ public class Shoot
 			nv.x += -1;
 		}
 		
-		
-		
-		
-		
-		
+		//push the player around
 		nv.unitize();
 		nv.scaleset(PLAYER_SPEED);
 		for(int i = 0 ; i < ents.size() ; i++)
@@ -222,7 +216,7 @@ public class Shoot
 					nv.addset((
 							dir.scale((MONST_SIZE*MONST_SIZE)/(skew*skew)))
 							.scale(PLAYER_SPEED*MONST_SPEED));*/
-					nv.scaleset(0.99);
+					nv.scaleset(0.95);
 				}
 			}
 		}
@@ -391,6 +385,12 @@ public class Shoot
 		
 	}
 	
+	public void altFireWeapon(int x, int y)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public int countMonsters()
 	{
 		int count = 0;
@@ -481,4 +481,5 @@ public class Shoot
 		return false;
 		
 	}
+
 }

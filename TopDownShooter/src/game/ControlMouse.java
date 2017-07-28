@@ -103,6 +103,7 @@ public class ControlMouse implements MouseListener
 				}
 				case MouseEvent.BUTTON2:
 				{
+					inst.altFireWeapon(e.getX(), e.getY());
 					keys.MOUSE_RIGHT = true;
 					keys.MOUSE_X = e.getX();
 					keys.MOUSE_Y = e.getY();
