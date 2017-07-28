@@ -111,30 +111,38 @@ public class MT_EntMovement implements Runnable
 	public void stepMoveMonster(Entity e)
 	{
 		if(e.is(Entity.MONST))
-		{	
-			e.v = e.headTo.sub(e.pos).unitize();
+		{
 			
-			e.v.scaleset(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED);
-			Vector nl = e.pos.add(e.v);
-			Vector nv = new Vector(e.v);
-			
-			for(int i = 0 ; i < ents.size() ; i++)
-			{	
-				Entity f = ents.get(i);
-				double skew = e.pos.skew(f.pos);
-				if(f != e && skew < Shoot.MONST_SIZE*4)
-				{
-					if(f.is(Entity.BODY))
+				e.v = e.headTo.sub(e.pos).unitize();
+				
+				e.v.scaleset(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED);
+				Vector nl = e.pos.add(e.v);
+				Vector nv = new Vector(e.v);
+				
+				for(int i = 0 ; i < ents.size() ; i++)
+				{	
+					Entity f = ents.get(i);
+					double skew = e.pos.skew(f.pos);
+					if(f != e && skew < Shoot.MONST_SIZE)
 					{
-						Vector dir = nl.sub(f.pos);	
-						nv.addset((dir.scale(Shoot.MONST_SIZE*Shoot.MONST_SIZE/(skew*skew))).scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+						if(f.is(Entity.BODY))
+						{
+							Vector dir = nl.sub(f.pos);
+							nv.addset((
+									dir.scale((Shoot.MONST_SIZE/skew)*(Shoot.MONST_SIZE/skew)))
+									.scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+						}
 					}
 				}
-			}
-			
-			e.v.set(nv.clamp(Shoot.PLAYER_SPEED*1.5));
-			e.newPos.set(Triangle.findClosestPos(e.pos, e.v, mw.gameMap.geo));
+				
+				nv.addset(new Vector((Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005, (Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005));
+				double skew = e.pos.skew(inst.getPlayerPos());
+				nv.addset(e.pos.sub(inst.getPlayerPos()).unit().scale((Shoot.MONST_SIZE/skew)*(Shoot.MONST_SIZE/skew)).scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+				e.v.set(nv.clamp(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED*1.5));
+				
+				e.newPos.set(Triangle.findClosestPos(e.pos, e.v, mw.gameMap.geo));
 		}
+		
 	}
 	
 	private Vector getNextMoveTo(Entity e)
@@ -184,7 +192,7 @@ public class MT_EntMovement implements Runnable
 			return v.get(v.size() - 2);
 		else
 			return v.get(0);
-				
+		
 		
 		
 		

@@ -40,7 +40,7 @@ public class Shoot
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int MAX_MONST = 1000;
 	public static final double MONST_SPEED = 0.8;
-	public static final double MONST_SIZE = 0.01;
+	public static final double MONST_SIZE = 0.025;
 	public static final double SPAWN_PROB = 1;
 	public static final double SPAWN_DIST = 1.5;
 	public static final double SPAWN_DIST_VARIATION = 1.5;
@@ -173,26 +173,50 @@ public class Shoot
 	 */
 	public void stepPlayer()
 	{
+		Vector nv = new Vector();
+		
 		player.v.set(0,0);
 		
 		if(keys.UP)
 		{
-			player.v.y += 1;	
+			nv.y += 1;	
 		}
 		else if(keys.DOWN)
 		{
-			player.v.y += -1;
+			nv.y += -1;
 		}
 		if(keys.RIGHT)
 		{
-			player.v.x += 1;
+			nv.x += 1;
 		}
 		else if(keys.LEFT)
 		{
-			player.v.x += -1;
+			nv.x += -1;
 		}
-		player.v.unitize();
-		player.v.scaleset(PLAYER_SPEED);
+		
+		if(nv.x != 0 || nv.y != 0)
+		{
+			nv.unitize();
+			nv.scaleset(PLAYER_SPEED);
+			
+			for(int i = 0 ; i < ents.size() ; i++)
+			{	
+				Entity f = ents.get(i);
+				double skew = player.pos.skew(f.pos);
+				if(f != player && skew < MONST_SIZE)
+				{
+					if(f.is(Entity.BODY))
+					{
+						Vector dir = f.pos.sub(player.pos);
+						nv.addset((
+								dir.scale((MONST_SIZE*MONST_SIZE)/(skew*skew)))
+								.scale(PLAYER_SPEED*MONST_SPEED*MONST_SPEED));
+					}
+				}
+			}
+		}
+		
+		player.v.set(nv.clamp(PLAYER_SPEED*2));
 		
 		for(Entity e : ents)
 		{
@@ -442,6 +466,6 @@ public class Shoot
 			if(x == c)
 				return true;
 		return false;
-						
+		
 	}
 }
