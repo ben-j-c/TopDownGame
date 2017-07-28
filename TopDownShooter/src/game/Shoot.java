@@ -173,7 +173,7 @@ public class Shoot
 	 */
 	public void stepPlayer()
 	{
-		Vector nv = new Vector();
+		Vector nv = new Vector();//new velocity
 		
 		player.v.set(0,0);
 		
@@ -194,29 +194,42 @@ public class Shoot
 			nv.x += -1;
 		}
 		
-		if(nv.x != 0 || nv.y != 0)
-		{
-			nv.unitize();
-			nv.scaleset(PLAYER_SPEED);
-			
-			for(int i = 0 ; i < ents.size() ; i++)
-			{	
-				Entity f = ents.get(i);
-				double skew = player.pos.skew(f.pos);
-				if(f != player && skew < MONST_SIZE)
+		
+		
+		
+		
+		
+		nv.unitize();
+		nv.scaleset(PLAYER_SPEED);
+		for(int i = 0 ; i < ents.size() ; i++)
+		{	
+			Entity f = ents.get(i);
+			double skew = player.pos.skew(f.pos);
+			if(f != player && f.is(Entity.BODY))
+			{
+				if(skew < MONST_SIZE*0.5)//if the player is too close, push them
 				{
-					if(f.is(Entity.BODY))
-					{
-						Vector dir = f.pos.sub(player.pos);
-						nv.addset((
-								dir.scale((MONST_SIZE*MONST_SIZE)/(skew*skew)))
-								.scale(PLAYER_SPEED*MONST_SPEED*MONST_SPEED));
-					}
+					
+					Vector dir = player.pos.sub(f.pos);
+					nv.addset((
+							dir.scale((MONST_SIZE*MONST_SIZE)/(skew*skew)))
+							.scale(PLAYER_SPEED*MONST_SPEED*MONST_SPEED));
+					
+				}
+				else if(skew < MONST_SIZE)//if they are within reach, grab them
+				{
+					/*Vector dir = f.pos.sub(player.pos);
+					nv.addset((
+							dir.scale((MONST_SIZE*MONST_SIZE)/(skew*skew)))
+							.scale(PLAYER_SPEED*MONST_SPEED));*/
+					nv.scaleset(0.99);
 				}
 			}
 		}
 		
-		player.v.set(nv.clamp(PLAYER_SPEED*2));
+		
+		//player velocity is the sum of the pushing velocity and default velocity
+		player.v.set(nv);
 		
 		for(Entity e : ents)
 		{

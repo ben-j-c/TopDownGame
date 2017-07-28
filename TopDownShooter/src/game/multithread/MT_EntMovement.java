@@ -127,19 +127,23 @@ public class MT_EntMovement implements Runnable
 					{
 						if(f.is(Entity.BODY))
 						{
-							Vector dir = nl.sub(f.pos);
+							Vector dir = e.pos.sub(f.pos);
 							nv.addset((
-									dir.scale((Shoot.MONST_SIZE/skew)*(Shoot.MONST_SIZE/skew)))
+									dir.scale((Shoot.MONST_SIZE*Shoot.MONST_SIZE/(skew*skew))))
 									.scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
 						}
 					}
 				}
 				
+				//apply a random velocity of 5% to the current velocity to allow for more realistic movement
 				nv.addset(new Vector((Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005, (Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005));
+				
+				//The player is also solid, so do the same as before
 				double skew = e.pos.skew(inst.getPlayerPos());
 				nv.addset(e.pos.sub(inst.getPlayerPos()).unit().scale((Shoot.MONST_SIZE/skew)*(Shoot.MONST_SIZE/skew)).scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
 				e.v.set(nv.clamp(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED*1.5));
 				
+				//Try to place the entity at a location closest to pos+v without intersecting geometry
 				e.newPos.set(Triangle.findClosestPos(e.pos, e.v, mw.gameMap.geo));
 		}
 		
