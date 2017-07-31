@@ -1,29 +1,21 @@
 package game.Entities.Ammo;
 
+import game.Shoot;
 import game.Entities.Pickup;
 
 public class GasTank extends Pickup
 {
-
-	@Override
-	public void doStep()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
 	@Override
 	public void pickedUp()
 	{
-		// TODO Auto-generated method stub
+		Shoot inst = Shoot.getInstance();
 		
 	}
 
 	@Override
-	public void dropped()
+	public void failedPickUp()
 	{
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

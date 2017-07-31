@@ -3,10 +3,11 @@ package game.Entities;
 import com.jogamp.opengl.GL2;
 
 import game.Entity;
+import game.Shoot;
 import geo.Vector;
 
-public abstract class Pickup extends Entity implements Dynamic
-{
+public abstract class Pickup extends Entity
+{	
 	 public Pickup(Entity e)
 	{
 		super(e);
@@ -21,10 +22,8 @@ public abstract class Pickup extends Entity implements Dynamic
 
 	double r, g, b;
 	
-	public Vector pos;
-	
 	public abstract void pickedUp();
-	public abstract void dropped();
+	public abstract void failedPickUp();
 	
 	public void render(GL2 gl)
 	{
@@ -38,4 +37,31 @@ public abstract class Pickup extends Entity implements Dynamic
 		gl.glEnd();
 	}
 	
+	public final boolean withinRange()
+	{
+		Shoot inst = Shoot.getInstance();
+		
+		if(this.pos.skew(inst.getPlayerPos()) < Shoot.MONST_SIZE)
+		{
+			if(this instanceof InventoryItem)
+			{
+				if(inst.addToInventory((InventoryItem) this))
+				{
+					pickedUp();
+					return true;
+				}
+				else
+				{
+					failedPickUp();
+				}
+			}
+			else
+			{
+				pickedUp();
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

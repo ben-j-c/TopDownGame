@@ -32,7 +32,7 @@ public class Entity
 	public Vector headTo;
 	public Vector v;
 	Triangle collide;
-	public double life = 10;
+	public double life = 100;
 	
 	double r, g, b;
 	
@@ -63,5 +63,17 @@ public class Entity
 	public boolean is(int TYPE)
 	{
 		return (this.TYPE & TYPE) != 0;
+	}
+
+	public void applyDamage(double damage)
+	{
+		life -= damage;
+		
+		if(life <= 0)
+		{
+			Shoot inst = Shoot.getInstance();
+			
+			inst.entityWrapper.removeEntity(this);
+		}
 	}
 }

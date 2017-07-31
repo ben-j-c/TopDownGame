@@ -8,14 +8,14 @@ import geo.Vector;
 
 public abstract class Projectile extends Entity implements Dynamic
 {
-	public Projectile(Entity e)
+	public Projectile()
 	{
-		super(e);
+		
 	}
 	
 	public void render(GL2 gl)
 	{
-		if(pos == null)
+		if(pos == null || v == null)
 			return;
 		
 		gl.glColor3d(Shoot.r.nextDouble(), Shoot.r.nextDouble(), Shoot.r.nextDouble());

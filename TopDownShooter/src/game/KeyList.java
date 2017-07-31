@@ -1,6 +1,6 @@
 package game;
 
-final class KeyList
+public final class KeyList
 {
 	public boolean UP = false;
 	public boolean DOWN = false;

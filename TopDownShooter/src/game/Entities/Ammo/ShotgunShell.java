@@ -6,13 +6,6 @@ public class ShotgunShell extends Pickup
 {
 
 	@Override
-	public void doStep()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void pickedUp()
 	{
 		// TODO Auto-generated method stub
@@ -20,10 +13,9 @@ public class ShotgunShell extends Pickup
 	}
 
 	@Override
-	public void dropped()
+	public void failedPickUp()
 	{
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

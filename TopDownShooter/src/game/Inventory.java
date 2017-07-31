@@ -1,7 +1,5 @@
 package game;
 
-import java.util.ArrayList;
-
 import game.Entities.InventoryItem;
 
 public class Inventory <E extends InventoryItem>
@@ -14,6 +12,8 @@ public class Inventory <E extends InventoryItem>
 	{
 		this.size = size;
 		addIndex = 0;
+		
+		inv = (E[]) new InventoryItem[size];
 	}
 	
 	public boolean add(E e)
@@ -51,5 +51,40 @@ public class Inventory <E extends InventoryItem>
 			return null;
 		
 		return inv[idx];
+	}
+	
+	/**
+	 * Get the first occurrence of the class
+	 * @param c the class you are looking for
+	 * @return the instance of the class you are looking for, or null if it is not found
+	 */
+	public E get(Class<? extends InventoryItem> c)
+	{
+		for(int i = 0 ; i < addIndex ; i++)
+		{
+			if(inv[i].getClass().equals(c))
+			{
+				return inv[i];
+			}
+		}
+		
+		return null;
+	}
+	
+	public int getSize()
+	{
+		return size;
+	}
+	
+	public int getAddIndex()
+	{
+		return addIndex;
+	}
+	
+	public void clear()
+	{
+		addIndex = 0;
+		
+		inv = (E[]) new InventoryItem[size];
 	}
 }

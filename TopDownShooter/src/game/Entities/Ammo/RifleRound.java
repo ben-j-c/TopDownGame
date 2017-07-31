@@ -1,29 +1,28 @@
 package game.Entities.Ammo;
 
+import game.Shoot;
 import game.Entities.Pickup;
+import game.Entities.Projectile;
+import game.Entities.Weapons.Rifle;
+import geo.Vector;
 
 public class RifleRound extends Pickup
 {
 
-	@Override
-	public void doStep()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
+	Vector v, pos;
+	
 	@Override
 	public void pickedUp()
 	{
-		// TODO Auto-generated method stub
+		Shoot inst = Shoot.getInstance();
+		Rifle r = (Rifle) inst.getInventoryItem((Class) Rifle.class);
 		
 	}
 
 	@Override
-	public void dropped()
+	public void failedPickUp()
 	{
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

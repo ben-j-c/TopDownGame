@@ -28,17 +28,16 @@ public class Medkit extends Pickup implements Usable
 	}
 
 	@Override
-	public void dropped()
+	public void use()
 	{
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void use()
+	public void failedPickUp()
 	{
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

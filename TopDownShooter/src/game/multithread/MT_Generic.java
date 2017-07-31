@@ -3,14 +3,16 @@ package game.multithread;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import game.Entity;
 import game.Shoot;
+import game.Entities.Dynamic;;
 
-public final class MT_Generic<E extends MT_Interface> implements Runnable
+public final class MT_Generic<E extends Dynamic> implements Runnable
 {
 	private ExecutorService es;
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
+	
+	public boolean debug = false;
 	
 	List<E> elements;
 	
@@ -22,6 +24,9 @@ public final class MT_Generic<E extends MT_Interface> implements Runnable
 	
 	public void doCycle()
 	{
+		if(debug == true)
+			System.out.println("doCylce@"+this);
+		
 		counter.set(0);
 		progress.set(0);
 		
@@ -47,13 +52,20 @@ public final class MT_Generic<E extends MT_Interface> implements Runnable
 	@Override
 	public void run()
 	{
+		if(debug == true)
+			System.out.println("\trun@"+this);
+		
+		if(debug == true)
+			System.out.println( "\t" + counter.get() +" & " + elements);
 		while(counter.get() < elements.size())
 		{
 			E e = null;
 			synchronized(counter)
 			{
+				
 				if(counter.get() < elements.size())
 				{
+					
 					e = elements.get(counter.getAndIncrement());
 				}
 				else
@@ -62,7 +74,11 @@ public final class MT_Generic<E extends MT_Interface> implements Runnable
 				}
 			}
 			
-			e.timeIndependentFunction();
+			if(debug)
+				System.out.println("\t\tdoStep@"+this);
+				
+			
+			e.doStep();
 			
 			synchronized(progress)
 			{

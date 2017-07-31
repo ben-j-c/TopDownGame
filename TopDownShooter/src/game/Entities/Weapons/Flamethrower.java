@@ -35,10 +35,23 @@ public class Flamethrower extends Pickup implements Weapon
 	}
 
 	@Override
-	public void dropped()
+	public void failedPickUp()
 	{
 		// TODO Auto-generated method stub
 		
 	}
-	
+
+	@Override
+	public void onAddToInventory()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRemoveFromInventory()
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }

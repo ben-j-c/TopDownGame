@@ -8,6 +8,7 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.glu.GLU;
 
+import game.Entities.Projectile;
 import geo.Dijkstra;
 import geo.Triangle;
 import geo.Vector;
@@ -286,7 +287,7 @@ public class Display  extends JFrame implements GLEventListener
 		if(inst.GAME_STARTED)
 		{
 			//gl.glColor3d(1, 0, 0);
-			for(Entity e : inst.ents)
+			for(Entity e : inst.entityWrapper.ents)
 			{
 				if((e.TYPE & Entity.PROJECTILE) != 0)
 				{
@@ -307,21 +308,10 @@ public class Display  extends JFrame implements GLEventListener
 			gl.glVertex2d(inst.player.pos.x, inst.player.pos.y);
 			drawCube(gl, 0.005, inst.player.pos.x, inst.player.pos.y, 0.01);
 
-			gl.glBegin(GL2.GL_LINES);
-			gl.glNormal3d(0, 0, 1);
-			for(Entity e : inst.ents)
+			for(Projectile p : inst.entityWrapper.projectiles)
 			{
-				if((e.TYPE & Entity.LASER) != 0)
-				{
-
-					gl.glColor3d(Math.random()*0.5 +0.5, Math.random()*0.5, 0);
-					gl.glVertex2d(e.pos.x,e.pos.y);
-					gl.glVertex2d(e.v.x,e.v.y);
-				}
+				p.render(gl);
 			}
-
-
-			gl.glEnd();
 		}
 	}
 	private void drawCube(GL2 gl, double r, double x, double y, double z)

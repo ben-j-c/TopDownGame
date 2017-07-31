@@ -1,15 +1,10 @@
 package game;
 
 import geo.Dijkstra;
-import geo.Map;
 import geo.Triangle;
-import geo.Triangle.BlockingVector;
 import geo.Vector;
 
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +17,13 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import game.Entities.Dynamic;
+import game.Entities.InventoryItem;
+import game.Entities.Projectile;
+import game.Entities.Weapon;
+import game.Entities.Weapons.Rifle;
 import game.multithread.MT_EntMovement;
+import game.multithread.MT_Generic;
 import game.multithread.MT_WeaponHit;
 
 /**
@@ -37,6 +38,7 @@ public class Shoot
 	private static final long serialVersionUID = 1L;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.009;
+	public static final int INVENTORY_SIZE = 4;
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int MAX_MONST = 1000;
 	public static final double MONST_SPEED = 0.8;
@@ -53,28 +55,28 @@ public class Shoot
 	public static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 	
 	//Service objects
-	public static final Random r = new Random(); 
+	public static final Random r = new Random();
+	private static Shoot inst; 
 	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	protected GLCanvas canvas;
 	private Display disp;
 	//MT_Pathing mtPathing;
 	MT_EntMovement mtEntMov;
-	MT_WeaponHit mtWepHit;
-	
-	//Control objects
-	private ArrayList<Entity> toRemove = new ArrayList<Entity>();
+	MT_Generic<Projectile> mtProjectiles;
+	MT_Generic<Dynamic> mtDynamics;
 	
 	//Control variables
 	protected boolean GAME_STARTED = false;
 	protected boolean PLACE_GRAPH = false;
-	private long gametime = 0;
-	protected Vector offset = new Vector(0,0);
+	protected long gameTime = 0;
 	
 	//Game objects
 	protected Entity player = new Entity(Entity.BODY);
-	protected ArrayList<Entity> ents = new ArrayList<Entity>();
-	KeyList keys = new KeyList();
+	public EntityWrapper entityWrapper = new EntityWrapper();
+	protected Inventory<InventoryItem> inv = new Inventory<InventoryItem>(INVENTORY_SIZE); private int invIdx = 0;
+	public KeyList keys = new KeyList();int mouseX = 0, mouseY = 0;
+	protected Vector offset = new Vector(0,0);
 	
 	protected ArrayList<Vector> points = new ArrayList<Vector>();	
 	MapWrapper mw = new MapWrapper();
@@ -87,7 +89,7 @@ public class Shoot
 	boolean weapon = false;
 	
 	Shoot()
-	{
+	{	
 		System.out.printf("THREAD_COUNT:%4d\n", THREAD_COUNT);
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
@@ -109,8 +111,11 @@ public class Shoot
 		canvas.addGLEventListener(disp);
 		animator = new FPSAnimator(canvas, 50);
 		
-		mtWepHit = new MT_WeaponHit(ents, mw, es, toRemove);
-		mtEntMov = new MT_EntMovement(this, ents, mw, es);
+		mtProjectiles = new MT_Generic<Projectile>(entityWrapper.projectiles, es);
+		mtDynamics = new MT_Generic<Dynamic>(entityWrapper.dynamics, es);
+		mtEntMov = new MT_EntMovement(this, entityWrapper.ents, mw, es);
+		
+		inst = this;
 	}
 	
 	public boolean isGameRunning()
@@ -119,7 +124,8 @@ public class Shoot
 	}
 	
 	/**
-	 * @return the player
+	 * 
+	 * @return the player's position
 	 */
 	public Vector getPlayerPos()
 	{
@@ -157,7 +163,7 @@ public class Shoot
 	{
 		if(player.life <= 0)
 		{
-			ents.clear();
+			entityWrapper.clear();
 			mw.descWithPlayer = new Dijkstra.Description();
 			player.pos.set(0,0);
 			
@@ -169,8 +175,16 @@ public class Shoot
 	/**
 	 * Set the player's velocity
 	 */
-	public void stepPlayer()
+	private void stepPlayer()
 	{
+		java.awt.Point p = canvas.getMousePosition(); 
+		
+		if(p != null)
+		{
+			mouseX = p.x;
+			mouseY = p.y;
+		}
+		
 		Vector nv = new Vector();//new velocity
 		
 		player.v.set(0,0);
@@ -195,9 +209,9 @@ public class Shoot
 		//push the player around
 		nv.unitize();
 		nv.scaleset(PLAYER_SPEED);
-		for(int i = 0 ; i < ents.size() ; i++)
+		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
 		{	
-			Entity f = ents.get(i);
+			Entity f = entityWrapper.ents.get(i);
 			double skew = player.pos.skew(f.pos);
 			if(f != player && f.is(Entity.BODY))
 			{
@@ -225,7 +239,7 @@ public class Shoot
 		//player velocity is the sum of the pushing velocity and default velocity
 		player.v.set(nv);
 		
-		for(Entity e : ents)
+		for(Entity e : entityWrapper.ents)
 		{
 			if(e.is(Entity.MONST))
 			{
@@ -240,14 +254,14 @@ public class Shoot
 	/**
 	 * Move the player in the map
 	 */
-	public void stepPlayerPos()
+	private void stepPlayerPos()
 	{
 		player.pos.set(Triangle.findClosestPos(player.pos, player.v, mw.gameMap.geo));
 	}
 	/**
 	 * set the graph with the player to a new graph
 	 */
-	public void stepPlayerGraph()
+	private void stepPlayerGraph()
 	{
 		ArrayList<Vector> extraNodes = new ArrayList<Vector>();
 		ArrayList<Dijkstra.Edge> extraEdges = new ArrayList<Dijkstra.Edge>();
@@ -268,18 +282,20 @@ public class Shoot
 	/**
 	 * Move all projectiles
 	 */
-	public void stepCalculateProjectileHits()
+	private void stepCalculateDynamics()
 	{
-		mtWepHit.doCycle();
-	}	
-	public void removeEntities()
+		mtProjectiles.doCycle();
+		mtDynamics.doCycle();
+	}
+	
+	private void removeEntities()
 	{
-		ents.removeAll(toRemove);
+		entityWrapper.removeAllToRemove();
 	}
 	/**
 	 * Spawns a monster in the game area
 	 */
-	public void stepSpawnMonster()
+	private void stepSpawnMonster()
 	{
 		for(;countMonsters() < MAX_MONST && Math.random() < SPAWN_PROB;)
 		{
@@ -296,30 +312,22 @@ public class Shoot
 				monster.g = Math.random()*MONST_G+MONST_G_OFFSET;
 				monster.b = Math.random()*MONST_B+MONST_B_OFFSET;
 				
-				ents.add(monster);
+				entityWrapper.addEntity(monster);
 				
 			}
 		}
 	}	
 	/**
-	 * Go through each entity and set its headTo to the next location to get to the player
-	 */
-	public void stepPathMonsters()
-	{
-		//mtPathing.doCycle();
-	}
-	
-	/**
 	 * Look at each entity that is of type Entity.MONST, and move it to e.headTo, without intersecting with any other entity.
 	 */
-	public void stepMoveMonsters()
+	private void stepMoveMonsters()
 	{
 		mtEntMov.doCycle();
 	}
 	/**
 	 * Incrementally alter the games state.
 	 */
-	public void stepGame()
+	protected void stepGame()
 	{
 		GAME_STARTED = isGameContinuing() && GAME_STARTED;
 		if(GAME_STARTED)
@@ -328,11 +336,13 @@ public class Shoot
 			this.stepPlayerPos();
 			this.stepPlayerGraph();
 			
-			this.stepCalculateProjectileHits();
+			this.stepCalculateDynamics();
 			this.removeEntities();
 			
 			this.stepSpawnMonster();
 			this.stepMoveMonsters();
+			
+			gameTime++;
 		}
 	}
 	
@@ -341,60 +351,39 @@ public class Shoot
 	 * @param x the location of the mouse on screen
 	 * @param y the location of the mouse on screen
 	 */
-	public void fireWeapon(double x, double y)
+	public void fireWeapon(int x, int y)
 	{
-		if(weapon)
-		{
-			Entity temp = new Entity(Entity.LASER);
-			
-			temp.pos.set(player.pos);
-			temp.v.set(translateToReal(x, y));//(2*x - canvas.getWidth())/canvas.getWidth() + player.pos.x, -(2*y - canvas.getHeight())/canvas.getHeight() + player.pos.y); //for laser, the velocity is actually just another point
-			double t = Triangle.calcIntersect(temp.pos, temp.v, mw.gameMap.geo).t; // find the closest intersection of pos -> v
-			temp.v.set(temp.pos.add(temp.v.sub(temp.pos).scale(t))); //v := (v-pos)*t + pos
-			
-			ArrayList<Entity> to_remove = new ArrayList<Entity>();
-			
-			for(Entity e : ents)
-			{
-				if(e.is(Entity.MONST))
-				{
-					double cos = e.pos.sub(temp.pos).cos(temp.v.sub(temp.pos));
-					
-					Vector ab = temp.v.sub(temp.pos);
-					
-					if(e.pos.distance(temp.pos, temp.v) < MONST_SIZE && cos >= 0  && e.pos.sub(temp.pos).projectOnto(ab).magsqr() <= ab.magsqr())
-					{
-						to_remove.add(e);
-					}
-				}
-			}
-			ents.removeAll(to_remove);
-			
-			ents.add(temp);
-		}
-		else	
-		{
-			Entity temp = new Entity(Entity.PROJECTILE);
-			temp.v.set(translateToReal(x,y).sub(player.pos));
-			temp.v.unitize();
-			temp.v.scaleset(PARTICLE_SPEED);
-			temp.v.addset(player.v);
-			temp.pos.set(player.pos);
-			ents.add(temp);
-		}
+		InventoryItem i = inv.get(invIdx);
 		
+		if(i == null)
+			return;
+		
+		if(i instanceof Weapon)
+		{
+			Weapon w = (Weapon) i;
+			w.fire(x, y);
+		}
 	}
 	
 	public void altFireWeapon(int x, int y)
 	{
-		// TODO Auto-generated method stub
+		InventoryItem i = inv.get(invIdx);
+		
+		if(i == null)
+			return;
+		
+		if(i instanceof Weapon)
+		{
+			Weapon w = (Weapon) i;
+			w.altFire(x, y);
+		}
 		
 	}
 	
 	public int countMonsters()
 	{
 		int count = 0;
-		for(Entity e: ents)
+		for(Entity e: entityWrapper.ents)
 		{
 			if(e.is(Entity.MONST))
 				count++;
@@ -424,9 +413,16 @@ public class Shoot
 	 */
 	protected void midGameReset()
 	{
-		ents.clear();
+		entityWrapper.clear();
+		
 		player = new Entity(Entity.BODY);
 		offset = new Vector(0,0);
+		inv.clear();
+		{
+			Rifle r = new Rifle();
+			entityWrapper.addDynamic(r);
+			inv.add(r);
+		}
 		
 		do 
 		{
@@ -481,5 +477,69 @@ public class Shoot
 		return false;
 		
 	}
-
+	
+	public static Shoot getInstance()
+	{
+		return inst;
+	}
+	
+	public boolean addToInventory(InventoryItem item)
+	{
+		return inv.add(item);
+	}
+	
+	public InventoryItem getInventoryItem(Class<? extends InventoryItem> c)
+	{
+		return inv.get(c);
+	}
+	
+	public Triangle.BlockingVector calcIntersect(Vector a, Vector b)
+	{
+		return Triangle.calcIntersect(a, b, mw.gameMap.geo);
+	}
+	
+	public ArrayList<Entity> getAdjacentEnts(Vector pos, double size)
+	{
+		ArrayList<Entity> ret = new ArrayList<Entity>();
+		
+		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
+		{
+			Entity e = entityWrapper.ents.get(i);
+			if(e.pos.skew(pos) < size)
+			{
+				ret.add(e);
+			}
+		}
+		return ret;
+	}
+	
+	public Entity getAdjacentEnt(Vector pos, double size)
+	{	
+		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
+		{
+			Entity e = entityWrapper.ents.get(i);
+			if(e.pos.skew(pos) < size)
+			{
+				return e;
+			}
+		}
+		return null;
+	}
+	
+	public int getMouseX()
+	{
+		
+		return mouseX;
+	}
+	
+	public int getMouseY()
+	{
+		// TODO Auto-generated method stub
+		return mouseY;
+	}
+	
+	public long getGameTime()
+	{
+		return gameTime;
+	}
 }
