@@ -97,6 +97,9 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glEnable(GL2.GL_LIGHT0);
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
+		
+		if(Shoot.DEBUG)
+			drawable.getAnimator().setUpdateFPSFrames(25, System.out);
 
 	}
 
@@ -314,7 +317,7 @@ public class Display  extends JFrame implements GLEventListener
 			}
 		}
 	}
-	private void drawCube(GL2 gl, double r, double x, double y, double z)
+	public static void drawCube(GL2 gl, double r, double x, double y, double z)
 	{
 
 		gl.glPushMatrix();

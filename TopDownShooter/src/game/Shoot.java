@@ -21,6 +21,7 @@ import game.Entities.Dynamic;
 import game.Entities.InventoryItem;
 import game.Entities.Projectile;
 import game.Entities.Weapon;
+import game.Entities.Weapons.Flamethrower;
 import game.Entities.Weapons.Rifle;
 import game.multithread.MT_EntMovement;
 import game.multithread.MT_Generic;
@@ -130,6 +131,11 @@ public class Shoot
 	public Vector getPlayerPos()
 	{
 		return player.pos.copy();
+	}
+	
+	public Vector getPlayerV()
+	{
+		return player.v.copy();
 	}
 	
 	/**
@@ -284,8 +290,22 @@ public class Shoot
 	 */
 	private void stepCalculateDynamics()
 	{
-		mtProjectiles.doCycle();
-		mtDynamics.doCycle();
+		if(entityWrapper.projectiles.size() > THREAD_COUNT*100)
+			mtProjectiles.doCycle();
+		else
+			for(Projectile p: entityWrapper.projectiles)
+			{
+				p.doStep();
+			}
+		
+		if(entityWrapper.dynamics.size() > THREAD_COUNT*100)
+			mtDynamics.doCycle();
+		else
+			for(Dynamic d: entityWrapper.dynamics)
+			{
+				d.doStep();
+			}
+		
 	}
 	
 	private void removeEntities()
@@ -329,21 +349,42 @@ public class Shoot
 	 */
 	protected void stepGame()
 	{
+		long[] a = new long[8];
+		
 		GAME_STARTED = isGameContinuing() && GAME_STARTED;
 		if(GAME_STARTED)
 		{
+			a[0] = System.currentTimeMillis();
 			this.stepPlayer();
+			a[1] = System.currentTimeMillis();
 			this.stepPlayerPos();
+			a[2] = System.currentTimeMillis();
 			this.stepPlayerGraph();
-			
+			a[3] = System.currentTimeMillis();
 			this.stepCalculateDynamics();
+			a[4] = System.currentTimeMillis();
 			this.removeEntities();
-			
+			a[5] = System.currentTimeMillis();
 			this.stepSpawnMonster();
+			a[6] = System.currentTimeMillis();
 			this.stepMoveMonsters();
-			
+			a[7] = System.currentTimeMillis();
 			gameTime++;
+			
+			if(DEBUG)
+				System.out.printf("SP:%d SPP:%d SPG:%d CD:%d RE:%d SM:%d MM:%d = %d\n",
+					a[1] - a[0],
+					a[2] - a[1],
+					a[3] - a[2],
+					a[4] - a[3],
+					a[5] - a[4],
+					a[6] - a[5],
+					a[7] - a[6],
+					a[7] - a[0]);
 		}
+		
+		
+		
 	}
 	
 	/**
@@ -419,7 +460,7 @@ public class Shoot
 		offset = new Vector(0,0);
 		inv.clear();
 		{
-			Rifle r = new Rifle();
+			Flamethrower r = new Flamethrower();
 			entityWrapper.addDynamic(r);
 			inv.add(r);
 		}

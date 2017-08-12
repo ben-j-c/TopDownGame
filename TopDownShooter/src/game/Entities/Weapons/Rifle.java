@@ -11,7 +11,7 @@ import game.Entities.Projectiles.Bullet;
 
 public class Rifle extends Pickup implements Weapon
 {
-	int ammo = 500;
+	int ammo = 100;
 	int offset = 0;
 	public static final double M_VELOCITY = Shoot.PLAYER_SPEED*5;
 	public static final int FRAMES = 100;
