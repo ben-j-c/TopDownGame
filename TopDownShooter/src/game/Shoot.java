@@ -371,7 +371,7 @@ public class Shoot
 			a[7] = System.currentTimeMillis();
 			gameTime++;
 			
-			if(DEBUG)
+			if(DEBUG && gameTime%25 == 0)
 				System.out.printf("SP:%d SPP:%d SPG:%d CD:%d RE:%d SM:%d MM:%d = %d\n",
 					a[1] - a[0],
 					a[2] - a[1],

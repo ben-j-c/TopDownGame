@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import game.Entity;
 import game.MapWrapper;
 import game.Shoot;
+import geo.AStar;
 import geo.Dijkstra;
 import geo.Triangle;
 import geo.Vector;
@@ -190,7 +191,7 @@ public class MT_EntMovement implements Runnable
 		
 		Dijkstra.Description temp = new Dijkstra.Description(mw.descWithPlayer, extraNodes, extraEdges);
 		
-		ArrayList<Vector> v = Dijkstra.getShortestPath(e.pos, inst.getPlayerPos(), temp);
+		ArrayList<Vector> v = AStar.getShortestPath(e.pos, inst.getPlayerPos(), temp);
 		
 		if(v.size() > 1)
 			return v.get(v.size() - 2);

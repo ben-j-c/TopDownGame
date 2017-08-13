@@ -467,7 +467,7 @@ public class Triangle implements Comparable<Triangle>
 	{
 		for(Triangle t: geo)
 		{
-			if(t.isIntersecting(pos, v,0.0005))
+			if(t.isIntersecting(pos, v, Triangle.DEFAULT_ERROR))
 			{
 				return false;
 			}
