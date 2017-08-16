@@ -90,7 +90,16 @@ public class AStarTest extends JPanel implements MouseListener
 			long a = System.nanoTime();
 			path = AStar.getShortestPath(start, end, desc);
 			long b = System.nanoTime();
-			System.out.printf("AStar: %d\n", b-a);
+			
+			System.out.println("AStar");
+			double distance = 0;
+			for(int i = 1 ; i < path.size() ; i++)
+			{
+				System.out.println("\t" + path.get(i));
+				distance += path.get(i).skew(path.get(i-1));
+			}
+			
+			System.out.printf("\t%d\t%f\n", b-a, distance);
 		}
 		else if(e.isShiftDown())
 		{
@@ -104,7 +113,16 @@ public class AStarTest extends JPanel implements MouseListener
 			long a = System.nanoTime();
 			path = Dijkstra.getShortestPath(start, end, desc);
 			long b = System.nanoTime();
-			System.out.printf("Dijkstra: %d\n", b-a);
+			
+			System.out.println("Dijkstra");
+			double distance = 0;
+			for(int i = 1 ; i < path.size() ; i++)
+			{
+				System.out.println("\t" + path.get(i));
+				distance += path.get(i).skew(path.get(i-1));
+			}
+			
+			System.out.printf("\t%d\t%f\n", b-a, distance);
 		}
 		else
 		{
@@ -140,6 +158,7 @@ public class AStarTest extends JPanel implements MouseListener
 		for(Vector v : desc.getNodes())
 		{	
 			g.fillOval((int) v.x - size/2, (int) v.y - size/2, size, size);
+			g.drawString("(" + v.x + ", "+ v.y + ")", (int) (v.x + size/2) , (int) (v.y - size/2));
 		}
 		g.setColor(Color.GRAY);
 		for(Dijkstra.Edge e : desc.getEdges())

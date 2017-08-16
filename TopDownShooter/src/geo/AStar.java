@@ -1,15 +1,50 @@
 package geo;
 
+import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class AStar
 {
+	private static class FVWrapper implements Comparable<FVWrapper>
+	{
+		Vector v;
+		Double fScore;
+		
+		FVWrapper(Vector v, Double fScore)
+		{
+			this.v = v;
+			this.fScore = fScore;
+		}
+		
+		@Override
+		public int compareTo(FVWrapper o)
+		{
+			if(this.fScore == o.fScore && v.equals(o.v))
+				return 0;
+			else if(o.fScore == null)
+				return -1;
+			else if(this.fScore == null)
+				return 1;
+			else if(this.fScore < o.fScore)
+				return -1;
+			else
+				return 1;
+		}
+		
+		public String toString()
+		{
+			return v.toString() + " " + fScore + " ";
+		}
+		
+		
+	}
+	
 	public static java.util.ArrayList<Vector> getShortestPath(Vector start, Vector end, Dijkstra.Description desc)
 	{
 		TreeSet<Vector> closedSet = new TreeSet<Vector>();
-		TreeSet<Vector> openSet = new TreeSet<Vector>();
-		openSet.add(start);
+		TreeSet<FVWrapper> openSet = new TreeSet<FVWrapper>();
+		openSet.add(new FVWrapper(start, heuristic(start, end)));
 		
 		TreeMap<Vector, Vector> cameFrom = new TreeMap<Vector, Vector>();
 		TreeMap<Vector, Double> gScore = new TreeMap<Vector, Double>();
@@ -20,40 +55,40 @@ public class AStar
 		
 		while(!openSet.isEmpty())
 		{
-			Vector current = openSet.first();
-			
-			for(Vector test : openSet)
-			{
-				Double f = fScore.get(test); 
-				if(f != null && f < fScore.get(current))
-					current = test;
-			}
-			
-			if(current.equals(end))
-				return getReturn(cameFrom, current);
-			
+			FVWrapper current = openSet.first();
 			openSet.remove(current);
-			closedSet.add(current);
 			
-			java.util.List<Vector> neighbor = desc.getNeighbor(current);
+			if(current.v.equals(end))
+				return getReturn(cameFrom, current.v);
+			
+			closedSet.add(current.v);
+			
+			java.util.List<Vector> neighbor = desc.getNeighbor(current.v);
 			
 			for(int i = 0 ; i < neighbor.size() ; i++)
 			{
 				Vector nei = neighbor.get(i); 
 				if(!closedSet.contains(nei))
 				{
-					openSet.add(nei);
+					FVWrapper neiOpen = new FVWrapper(nei, null); 
 					
-					double tenative = gScore.get(current) + current.skew(nei);
+					double tenative = gScore.get(current.v) + current.v.skew(nei);
 					
 					Double g = gScore.get(nei);
 					g = g == null? Triangle.LARGE_VALUE : g;
 					if(tenative < g)
 					{
-						cameFrom.put(nei, current);
+						cameFrom.put(nei, current.v);
 						gScore.put(nei, tenative);
-						fScore.put(nei, g + heuristic(nei, end));
+						double f = g + heuristic(nei, end);
+						fScore.put(nei, f);
+						
+						neiOpen.fScore = f;
+						
+						
 					}
+					
+					openSet.add(neiOpen);
 				}
 			}
 		}
