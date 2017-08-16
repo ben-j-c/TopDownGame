@@ -51,7 +51,11 @@ public class EntityWrapper
 	{
 		ents.removeAll(toRemove);
 		projectiles.removeAll(projToRemove);
-		//dynamics.removeAll(dynamicToRemove);
+		dynamics.removeAll(dynamicToRemove);
+		
+		toRemove.clear();
+		projToRemove.clear();
+		dynamicToRemove.clear();
 	}
 	
 	public void clear()
