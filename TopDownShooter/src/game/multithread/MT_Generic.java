@@ -1,5 +1,6 @@
 package game.multithread;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -14,9 +15,10 @@ public final class MT_Generic<E extends Dynamic> implements Runnable
 	
 	public boolean debug = false;
 	
-	List<E> elements;
+	Collection<E> elements;
+	private E[] cycleData;
 	
-	public MT_Generic(List<E> elements, ExecutorService es)
+	public MT_Generic(Collection<E> elements, ExecutorService es)
 	{
 		this.elements = elements;
 		this.es = es;
@@ -29,6 +31,8 @@ public final class MT_Generic<E extends Dynamic> implements Runnable
 		
 		counter.set(0);
 		progress.set(0);
+		
+		cycleData = (E[]) elements.toArray();
 		
 		synchronized(progress)
 		{
@@ -66,7 +70,7 @@ public final class MT_Generic<E extends Dynamic> implements Runnable
 				if(counter.get() < elements.size())
 				{
 					
-					e = elements.get(counter.getAndIncrement());
+					e = cycleData[counter.getAndIncrement()];
 				}
 				else
 				{

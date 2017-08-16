@@ -16,7 +16,7 @@ import geo.Vector;
  * Type of entity
  *
  */
-public class Entity
+public class Entity implements Comparable<Entity>
 {
 	public static final int NULL		= 0;
 	public static final int PROJECTILE	= 1;
@@ -26,6 +26,8 @@ public class Entity
 	public static final int BODY 		= 16;
 	public static final int LASER 		= 32;
 	
+	public final long id;
+	private static long idIdx = 0; 
 	
 	public Vector pos;
 	public Vector newPos;
@@ -37,8 +39,18 @@ public class Entity
 	double r, g, b;
 	
 	int TYPE;
+	
+	public Entity()
+	{
+		synchronized(Entity.class)
+		{
+			id = idIdx++;
+		}
+	}
+	
 	public Entity(int t)
 	{
+		this();
 		TYPE = t;
 		pos = new Vector();
 		newPos = new Vector();
@@ -48,16 +60,12 @@ public class Entity
 	
 	public Entity(Entity e)
 	{
+		this();
 		pos = new Vector(e.pos);
 		v = new Vector(e.v);
 		collide = e.collide;
 		life = e.life;
 		TYPE = e.TYPE;
-	}
-	
-	public Entity()
-	{
-		// TODO Auto-generated constructor stub
 	}
 
 	public boolean is(int TYPE)
@@ -75,5 +83,11 @@ public class Entity
 			
 			inst.entityWrapper.removeEntity(this);
 		}
+	}
+
+	@Override
+	public int compareTo(Entity e)
+	{
+		return (int) (this.id - e.id);
 	}
 }

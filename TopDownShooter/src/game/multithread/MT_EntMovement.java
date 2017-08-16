@@ -1,6 +1,7 @@
 package game.multithread;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 
 import game.Entity;
@@ -18,11 +19,12 @@ public class MT_EntMovement implements Runnable
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
-	private ArrayList<Entity> ents;
+	private Collection<Entity> ents;
+	private Entity[] cycleData;
 	private MapWrapper mw;
 	private Shoot inst;
 	
-	public MT_EntMovement(Shoot inst, ArrayList<Entity> ents, MapWrapper mw, ExecutorService es)
+	public MT_EntMovement(Shoot inst, Collection<Entity> ents, MapWrapper mw, ExecutorService es)
 	{
 		this.ents = ents;
 		this.mw = mw;
@@ -39,6 +41,8 @@ public class MT_EntMovement implements Runnable
 		{
 			e.headTo = null;
 		}
+		
+		cycleData = ents.toArray(new Entity[0]);
 		
 		synchronized(progress)
 		{
@@ -77,7 +81,7 @@ public class MT_EntMovement implements Runnable
 			{
 				if(counter.get() < ents.size())
 				{
-					e = ents.get(counter.getAndIncrement());
+					e = cycleData[counter.getAndIncrement()];
 				}
 				else
 				{
@@ -122,7 +126,7 @@ public class MT_EntMovement implements Runnable
 				
 				for(int i = 0 ; i < ents.size() ; i++)
 				{	
-					Entity f = ents.get(i);
+					Entity f = cycleData[i];
 					double skew = e.pos.skew(f.pos);
 					if(f != e && skew < Shoot.MONST_SIZE)
 					{

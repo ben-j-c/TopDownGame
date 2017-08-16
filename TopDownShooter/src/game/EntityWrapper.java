@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import game.Entities.Dynamic;
 import game.Entities.Projectile;
@@ -8,9 +9,9 @@ import geo.Vector;
 
 public class EntityWrapper
 {
-	public ArrayList<Entity> ents = new ArrayList<Entity>();
-	public ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
-	public ArrayList<Dynamic> dynamics = new ArrayList<Dynamic>();
+	public HashSet<Entity> ents = new HashSet<Entity>(Shoot.MAX_MONST);
+	public HashSet<Projectile> projectiles = new HashSet<Projectile>(Shoot.MAX_MONST);
+	public HashSet<Dynamic> dynamics = new HashSet<Dynamic>(Shoot.MAX_MONST);
 	
 	public ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	public ArrayList<Projectile> projToRemove = new ArrayList<Projectile>();
@@ -68,9 +69,11 @@ public class EntityWrapper
 	{
 		ArrayList<Entity> ret = new ArrayList<Entity>();
 		
-		for(int i = 0 ; i < ents.size() ; i++)
+		Entity[] temp = (Entity[]) ents.toArray(); 
+		
+		for(int i = 0 ; i < temp.length ; i++)
 		{
-			Entity e = ents.get(i);
+			Entity e = temp[i];
 			if(e.pos.skew(pos) < size)
 			{
 				ret.add(e);
@@ -81,9 +84,10 @@ public class EntityWrapper
 	
 	public Entity getAdjacentEnt(Vector pos, double size)
 	{	
-		for(int i = 0 ; i < ents.size() ; i++)
+		Entity[] temp = (Entity[]) ents.toArray(); 
+		for(int i = 0 ; i < temp.length ; i++)
 		{
-			Entity e = ents.get(i);
+			Entity e = temp[i];
 			if(e.pos.skew(pos) < size)
 			{
 				return e;
@@ -98,5 +102,4 @@ public class EntityWrapper
 		
 		return ret;
 	}
-	
 }

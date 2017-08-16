@@ -78,6 +78,7 @@ public class Shoot
 	protected Inventory<InventoryItem> inv = new Inventory<InventoryItem>(INVENTORY_SIZE); private int invIdx = 0;
 	public KeyList keys = new KeyList();int mouseX = 0, mouseY = 0;
 	protected Vector offset = new Vector(0,0);
+	private Entity[] cycleData;
 	
 	protected ArrayList<Vector> points = new ArrayList<Vector>();	
 	MapWrapper mw = new MapWrapper();
@@ -184,6 +185,8 @@ public class Shoot
 	private void stepPlayer()
 	{
 		java.awt.Point p = canvas.getMousePosition(); 
+	
+		cycleData = entityWrapper.ents.toArray(new Entity[0]);
 		
 		if(p != null)
 		{
@@ -217,7 +220,7 @@ public class Shoot
 		nv.scaleset(PLAYER_SPEED);
 		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
 		{	
-			Entity f = entityWrapper.ents.get(i);
+			Entity f = (Entity) cycleData[i];
 			double skew = player.pos.skew(f.pos);
 			if(f != player && f.is(Entity.BODY))
 			{
@@ -545,7 +548,7 @@ public class Shoot
 		
 		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
 		{
-			Entity e = entityWrapper.ents.get(i);
+			Entity e = cycleData[i];
 			if(e.pos.skew(pos) < size)
 			{
 				ret.add(e);
@@ -558,7 +561,7 @@ public class Shoot
 	{	
 		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
 		{
-			Entity e = entityWrapper.ents.get(i);
+			Entity e = cycleData[i];
 			if(e.pos.skew(pos) < size)
 			{
 				return e;
