@@ -2,21 +2,19 @@ package game;
 
 import game.Entities.InventoryItem;
 
-public class Inventory <E extends InventoryItem>
+public class Inventory
 {
-	E[] inv;
+	InventoryItem[] inv;
 	
-	private int size, addIndex;
+	private int size, addIndex, selectedIndex;
 	
 	public Inventory(int size)
 	{
 		this.size = size;
-		addIndex = 0;
-		
-		inv = (E[]) new InventoryItem[size];
+		this.clear();
 	}
 	
-	public boolean add(E e)
+	public boolean add(InventoryItem e)
 	{
 		if(size <= addIndex)
 			return false;
@@ -28,13 +26,13 @@ public class Inventory <E extends InventoryItem>
 		return true;
 	}
 	
-	public E remove(int idx)
+	public InventoryItem remove(int idx)
 	{
 		if(idx >= addIndex || idx < 0)
 			return null;
 		
 		
-		E ret = inv[idx];
+		InventoryItem ret = inv[idx];
 		
 		for(int i = idx ; i < addIndex ; i++)
 		{
@@ -45,7 +43,7 @@ public class Inventory <E extends InventoryItem>
 		return ret;
 	}
 	
-	public E get(int idx)
+	public InventoryItem get(int idx)
 	{
 		if(idx >= addIndex || idx < 0)
 			return null;
@@ -58,7 +56,7 @@ public class Inventory <E extends InventoryItem>
 	 * @param c the class you are looking for
 	 * @return the instance of the class you are looking for, or null if it is not found
 	 */
-	public E get(Class<? extends InventoryItem> c)
+	public InventoryItem get(Class<? extends InventoryItem> c)
 	{
 		for(int i = 0 ; i < addIndex ; i++)
 		{
@@ -85,6 +83,32 @@ public class Inventory <E extends InventoryItem>
 	{
 		addIndex = 0;
 		
-		inv = (E[]) new InventoryItem[size];
+		inv = new InventoryItem[size];
+	}
+	
+	public void setDefaultLoadout()
+	{
+		clear();
+		
+		this.add(new game.Entities.Weapons.LaserRifle());
+		this.add(new game.Entities.Weapons.LaserShotgun());
+		this.add(new game.Entities.Weapons.Shotgun());
+		this.add(new game.Entities.Weapons.Flamethrower());
+		this.add(new game.Entities.Weapons.Rifle());
+	}
+
+	public InventoryItem getSelected()
+	{
+		return this.get(selectedIndex);
+	}
+	
+	public void nextItem()
+	{
+		selectedIndex = (selectedIndex + 1)%size;
+	}
+	
+	public void previousItem()
+	{
+		selectedIndex = ((selectedIndex == 1)? size:selectedIndex) - 1;
 	}
 }

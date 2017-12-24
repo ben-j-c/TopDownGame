@@ -90,8 +90,8 @@ public class ControlMouse implements MouseListener
 						mw.gameMap.geo.add(t);
 					}
 				}
-			}
-		}
+			} 
+		} //!inst.GAME_STARTED
 		else
 		{
 			switch(e.getButton())

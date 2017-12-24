@@ -10,7 +10,10 @@ import game.Entities.Dynamic;;
 public final class MT_Generic<E extends Dynamic> implements Runnable
 {
 	private ExecutorService es;
+	
+	//Index for current next job
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
+	//Progress counter for completed jobs
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
 	public boolean debug = false;

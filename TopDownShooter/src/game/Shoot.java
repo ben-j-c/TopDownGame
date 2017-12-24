@@ -22,10 +22,8 @@ import game.Entities.InventoryItem;
 import game.Entities.Projectile;
 import game.Entities.Weapon;
 import game.Entities.Weapons.Flamethrower;
-import game.Entities.Weapons.Rifle;
 import game.multithread.MT_EntMovement;
 import game.multithread.MT_Generic;
-import game.multithread.MT_WeaponHit;
 
 /**
  * 
@@ -35,11 +33,10 @@ import game.multithread.MT_WeaponHit;
 public class Shoot
 {
 	//Constants
-	public static final boolean DEBUG = true;
-	private static final long serialVersionUID = 1L;
+	public static boolean DEBUG = false;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.009;
-	public static final int INVENTORY_SIZE = 4;
+	public static final int INVENTORY_SIZE = 5;
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int MAX_MONST = 1000;
 	public static final double MONST_SPEED = 0.8;
@@ -63,7 +60,7 @@ public class Shoot
 	protected GLCanvas canvas;
 	private Display disp;
 	//MT_Pathing mtPathing;
-	MT_EntMovement mtEntMov;
+	MT_EntMovement mtEntMov;//Use of redundant class
 	MT_Generic<Projectile> mtProjectiles;
 	MT_Generic<Dynamic> mtDynamics;
 	
@@ -75,7 +72,7 @@ public class Shoot
 	//Game objects
 	protected Entity player = new Entity(Entity.BODY);
 	public EntityWrapper entityWrapper = new EntityWrapper();
-	protected Inventory<InventoryItem> inv = new Inventory<InventoryItem>(INVENTORY_SIZE); private int invIdx = 0;
+	protected final Inventory inv = new Inventory(INVENTORY_SIZE); public int invIdx = 0;
 	public KeyList keys = new KeyList();int mouseX = 0, mouseY = 0;
 	protected Vector offset = new Vector(0,0);
 	private Entity[] cycleData;
@@ -88,7 +85,6 @@ public class Shoot
 	protected ControlKeyboard kbcontrol = new ControlKeyboard(this);
 	
 	//Game variables
-	boolean weapon = false;
 	
 	Shoot()
 	{	
@@ -385,9 +381,6 @@ public class Shoot
 					a[7] - a[6],
 					a[7] - a[0]);
 		}
-		
-		
-		
 	}
 	
 	/**
@@ -397,7 +390,7 @@ public class Shoot
 	 */
 	public void fireWeapon(int x, int y)
 	{
-		InventoryItem i = inv.get(invIdx);
+		InventoryItem i = inv.getSelected();
 		
 		if(i == null)
 			return;
@@ -411,7 +404,7 @@ public class Shoot
 	
 	public void altFireWeapon(int x, int y)
 	{
-		InventoryItem i = inv.get(invIdx);
+		InventoryItem i = inv.getSelected();
 		
 		if(i == null)
 			return;
@@ -461,12 +454,7 @@ public class Shoot
 		
 		player = new Entity(Entity.BODY);
 		offset = new Vector(0,0);
-		inv.clear();
-		{
-			Flamethrower r = new Flamethrower();
-			entityWrapper.addDynamic(r);
-			inv.add(r);
-		}
+		inv.setDefaultLoadout();
 		
 		do 
 		{

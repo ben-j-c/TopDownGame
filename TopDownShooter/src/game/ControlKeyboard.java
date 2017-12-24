@@ -69,7 +69,7 @@ public class ControlKeyboard implements KeyListener
 			}
 			case 'q':
 			{
-				inst.weapon = !inst.weapon;
+				inst.inv.nextItem();
 				break;
 			}
 			default:
