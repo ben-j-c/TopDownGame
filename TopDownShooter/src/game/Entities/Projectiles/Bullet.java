@@ -44,7 +44,7 @@ public class Bullet  extends Projectile
 				e.applyDamage(damage);
 			}
 			
-			inst.entityWrapper.removeProjectile(this);
+			inst.entityWrapper.autoRemove(this);
 		}
 		
 		frames--;

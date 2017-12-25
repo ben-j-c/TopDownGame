@@ -26,7 +26,7 @@ public class Laser  extends Projectile
 		
 		if(frames <= 0)
 		{	
-			inst.entityWrapper.removeProjectile(this);
+			inst.entityWrapper.autoRemove(this);
 		}
 		
 		frames--;

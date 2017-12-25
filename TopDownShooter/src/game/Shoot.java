@@ -17,10 +17,15 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import game.Entities.Body;
 import game.Entities.Dynamic;
 import game.Entities.InventoryItem;
+import game.Entities.Monster;
+import game.Entities.Pathable;
 import game.Entities.Projectile;
 import game.Entities.Weapon;
+import game.Entities.Monsters.GMonster;
+import game.Entities.Monsters.Player;
 import game.Entities.Weapons.Flamethrower;
 import game.multithread.MT_EntMovement;
 import game.multithread.MT_Generic;
@@ -33,7 +38,7 @@ import game.multithread.MT_Generic;
 public class Shoot
 {
 	//Constants
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.009;
 	public static final int INVENTORY_SIZE = 5;
@@ -55,7 +60,7 @@ public class Shoot
 	//Service objects
 	public static final Random r = new Random();
 	private static Shoot inst; 
-	private ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
+	private final ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
 	private FPSAnimator animator;
 	protected GLCanvas canvas;
 	private Display disp;
@@ -70,21 +75,19 @@ public class Shoot
 	protected long gameTime = 0;
 	
 	//Game objects
-	protected Entity player = new Entity(Entity.BODY);
-	public EntityWrapper entityWrapper = new EntityWrapper();
+	protected Player player = new Player();
+	public final EntityWrapper entityWrapper = new EntityWrapper();
 	protected final Inventory inv = new Inventory(INVENTORY_SIZE); public int invIdx = 0;
 	public KeyList keys = new KeyList();int mouseX = 0, mouseY = 0;
 	protected Vector offset = new Vector(0,0);
 	private Entity[] cycleData;
 	
 	protected ArrayList<Vector> points = new ArrayList<Vector>();	
-	MapWrapper mw = new MapWrapper();
+	public final MapWrapper mw = new MapWrapper();
 	
 	//Interface objects
-	protected ControlMouse mcontrol = new ControlMouse(this);
-	protected ControlKeyboard kbcontrol = new ControlKeyboard(this);
-	
-	//Game variables
+	protected final ControlMouse mcontrol = new ControlMouse(this);
+	protected final ControlKeyboard kbcontrol = new ControlKeyboard(this);
 	
 	Shoot()
 	{	
@@ -111,7 +114,7 @@ public class Shoot
 		
 		mtProjectiles = new MT_Generic<Projectile>(entityWrapper.projectiles, es);
 		mtDynamics = new MT_Generic<Dynamic>(entityWrapper.dynamics, es);
-		mtEntMov = new MT_EntMovement(this, entityWrapper.ents, mw, es);
+		mtEntMov = new MT_EntMovement(entityWrapper.pathEnts, es);
 		
 		inst = this;
 	}
@@ -175,6 +178,11 @@ public class Shoot
 		
 		return true;
 	}
+	
+	///////////////////////////////////////GAME STEPS/////////////////////////////////////
+	///////////////////////////////////////GAME STEPS/////////////////////////////////////
+	///////////////////////////////////////GAME STEPS/////////////////////////////////////
+	
 	/**
 	 * Set the player's velocity
 	 */
@@ -325,14 +333,8 @@ public class Shoot
 			
 			if(!Triangle.tooClose(pos, Triangle.DEFAULT_ERROR, mw.gameMap.geo))
 			{
-				Entity monster = new Entity(Entity.MONST | Entity.BODY);
-				monster.pos = pos;
-				monster.r = Math.random()*MONST_R+MONST_R_OFFSET;
-				monster.g = Math.random()*MONST_G+MONST_G_OFFSET;
-				monster.b = Math.random()*MONST_B+MONST_B_OFFSET;
-				
-				entityWrapper.addEntity(monster);
-				
+				GMonster monster = new GMonster(pos);	
+				entityWrapper.autoAdd(monster);
 			}
 		}
 	}	
@@ -371,6 +373,7 @@ public class Shoot
 			gameTime++;
 			
 			if(DEBUG && gameTime%25 == 0)
+			{
 				System.out.printf("SP:%d SPP:%d SPG:%d CD:%d RE:%d SM:%d MM:%d = %d\n",
 					a[1] - a[0],
 					a[2] - a[1],
@@ -380,8 +383,15 @@ public class Shoot
 					a[6] - a[5],
 					a[7] - a[6],
 					a[7] - a[0]);
+				
+				System.out.printf("ec:%d pa:%d dy:%d pr:%d\n", entityWrapper.ents.size(), entityWrapper.pathEnts.size(), entityWrapper.dynamics.size() , entityWrapper.projectiles.size());
+			}
 		}
 	}
+	
+	/////////////////////////////////////END OF GAME STEPS///////////////////////////////////
+	/////////////////////////////////////END OF GAME STEPS///////////////////////////////////
+	/////////////////////////////////////END OF GAME STEPS///////////////////////////////////
 	
 	/**
 	 * 
@@ -422,7 +432,7 @@ public class Shoot
 		int count = 0;
 		for(Entity e: entityWrapper.ents)
 		{
-			if(e.is(Entity.MONST))
+			if(e instanceof Monster)
 				count++;
 		}
 		return count;
@@ -452,7 +462,7 @@ public class Shoot
 	{
 		entityWrapper.clear();
 		
-		player = new Entity(Entity.BODY);
+		player = new Player();
 		offset = new Vector(0,0);
 		inv.setDefaultLoadout();
 		
@@ -515,21 +525,43 @@ public class Shoot
 		return inst;
 	}
 	
+	/**
+	 * inv.add(item)
+	 * @param item
+	 * @return
+	 */
 	public boolean addToInventory(InventoryItem item)
 	{
 		return inv.add(item);
 	}
 	
+	/**
+	 * inv.get(c)
+	 * @param c
+	 * @return
+	 */
 	public InventoryItem getInventoryItem(Class<? extends InventoryItem> c)
 	{
 		return inv.get(c);
 	}
 	
+	/**
+	 * Check to see if the line ab intersects any of the map geometry
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	public Triangle.BlockingVector calcIntersect(Vector a, Vector b)
 	{
 		return Triangle.calcIntersect(a, b, mw.gameMap.geo);
 	}
 	
+	/**
+	 * Get a list of the entities that are within the radius size
+	 * @param pos
+	 * @param size
+	 * @return
+	 */
 	public ArrayList<Entity> getAdjacentEnts(Vector pos, double size)
 	{
 		ArrayList<Entity> ret = new ArrayList<Entity>();
@@ -545,6 +577,12 @@ public class Shoot
 		return ret;
 	}
 	
+	/**
+	 * Get the first entity within the radius size
+	 * @param pos
+	 * @param size
+	 * @return
+	 */
 	public Entity getAdjacentEnt(Vector pos, double size)
 	{	
 		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)

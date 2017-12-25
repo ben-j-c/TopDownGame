@@ -17,7 +17,7 @@ public class Flamethrower extends Pickup implements Weapon
 	public static final int ROUNDS = 10;
 	public static final int FRAMES = 100;
 	public static final double DAMAGE = 10;
-	public static final double ACCURACY = 5.0/180.0*Math.PI;
+	public static final double ACCURACY = 5.0/180.0*Math.PI; //5 degrees converted into radians
 	
 	@Override
 	public void doStep()

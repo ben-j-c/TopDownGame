@@ -35,7 +35,7 @@ public class Flame extends Projectile
 		
 		if( frames <= 0)
 		{
-			inst.entityWrapper.removeProjectile(this);
+			inst.entityWrapper.autoRemove(this);
 		}
 		
 		if(e != null)

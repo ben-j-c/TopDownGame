@@ -292,6 +292,8 @@ public class Display  extends JFrame implements GLEventListener
 			//gl.glColor3d(1, 0, 0);
 			for(Entity e : inst.entityWrapper.ents)
 			{
+				e.render(gl);
+				
 				if((e.TYPE & Entity.PROJECTILE) != 0)
 				{
 					gl.glColor3d(Math.random()*0.5 +0.5, Math.random()*0.5, 0);

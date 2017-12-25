@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import game.Entity;
 import game.MapWrapper;
 import game.Shoot;
+import game.Entities.Pathable;
 import geo.AStar;
 import geo.Dijkstra;
 import geo.Triangle;
@@ -19,17 +20,13 @@ public class MT_EntMovement implements Runnable
 	private java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
 	private java.util.concurrent.atomic.AtomicInteger progress = new java.util.concurrent.atomic.AtomicInteger();
 	
-	private Collection<Entity> ents;
-	private Entity[] cycleData;
-	private MapWrapper mw;
-	private Shoot inst;
+	private Collection<Pathable> paths;
+	private Object[] cycleData;
 	
-	public MT_EntMovement(Shoot inst, Collection<Entity> ents, MapWrapper mw, ExecutorService es)
+	public MT_EntMovement(Collection<Pathable> paths, ExecutorService es)
 	{
-		this.ents = ents;
-		this.mw = mw;
+		this.paths = paths;
 		this.es = es;
-		this.inst = inst;
 	}
 	
 	public void doCycle()
@@ -37,51 +34,51 @@ public class MT_EntMovement implements Runnable
 		counter.set(0);
 		progress.set(0);
 		
-		for(Entity e : ents)
+		////Prepath 
+		for(Pathable e : paths)
 		{
-			e.headTo = null;
+			e.prePath();
 		}
 		
-		cycleData = ents.toArray(new Entity[0]);
+		cycleData = paths.toArray();
 		
+		////Path
+		//wait for the progress counter to reach the length of the list
 		synchronized(progress)
 		{
 			for(int i = 0 ; i < Shoot.THREAD_COUNT ; i++)
-				es.execute(this);
+				es.execute(this); //Path
 			
-			while(progress.get() < ents.size())
-			{
+			while(progress.get() < paths.size()){
 				try
 				{
-					progress.wait();	
+					progress.wait();
 				}
-				catch (InterruptedException e1)
+				catch (InterruptedException e1) 
 				{
 					e1.printStackTrace();
 				}
-				
 			}
 		}
 		
-		
-		for(Entity e: ents)
+		////Postpath
+		for(Pathable p: paths)
 		{
-			if(e.is(Entity.BODY))
-				e.pos = e.newPos.copy();
+			p.postPath();
 		}
 		
 	}
 	
-	public void run()
+	public void run() //Path
 	{
-		while(counter.get() < ents.size())
+		while(counter.get() < paths.size())
 		{
-			Entity e = null;
+			Pathable p = null;
 			synchronized(counter)
 			{
-				if(counter.get() < ents.size())
+				if(counter.get() < paths.size())
 				{
-					e = cycleData[counter.getAndIncrement()];
+					p = (Pathable) cycleData[counter.getAndIncrement()];
 				}
 				else
 				{
@@ -89,9 +86,10 @@ public class MT_EntMovement implements Runnable
 				}
 			}
 			
+			p.path();
 			
-			e.headTo = getNextMoveTo(e);
-			stepMoveMonster(e);
+			//e.headTo = getNextMoveTo(e);
+			//stepMoveMonster(e);
 			synchronized(progress)
 			{
 				progress.incrementAndGet();
@@ -102,17 +100,18 @@ public class MT_EntMovement implements Runnable
 		
 		synchronized(progress)
 		{
-			if(progress.get() >= ents.size())
+			if(progress.get() >= paths.size())
 			{
 				progress.notify();
 			}
-			
 		}
 	}
 	
 	/**
 	 * Look at each entity that is of type Entity.BODY, and move it to e.headTo, without intersecting with any other entity.
 	 */
+	
+	/*
 	public void stepMoveMonster(Entity e)
 	{
 		if(e.is(Entity.MONST))
@@ -124,7 +123,7 @@ public class MT_EntMovement implements Runnable
 				Vector nl = e.pos.add(e.v);
 				Vector nv = new Vector(e.v);
 				
-				for(int i = 0 ; i < ents.size() ; i++)
+				for(int i = 0 ; i < paths.size() ; i++)
 				{	
 					Entity f = cycleData[i];
 					double skew = e.pos.skew(f.pos);
@@ -154,6 +153,7 @@ public class MT_EntMovement implements Runnable
 		
 	}
 	
+	
 	private Vector getNextMoveTo(Entity e)
 	{
 		Vector pos = inst.getPlayerPos();
@@ -168,7 +168,7 @@ public class MT_EntMovement implements Runnable
 		}
 		
 		
-		for(Entity other :ents)
+		for(Entity other :paths)
 		{
 			if(other.headTo != null
 					&& other.pos.sub(e.pos).magsqr() < 4*Shoot.MONST_SIZE*Shoot.MONST_SIZE
@@ -209,11 +209,10 @@ public class MT_EntMovement implements Runnable
 	
 	public void stepAllMonsters()
 	{
-		for(Entity e : ents)
+		for(Entity e : paths)
 		{
 			e.pos = e.newPos.copy();
 		}
 	}
-	
-	
+	*/
 }

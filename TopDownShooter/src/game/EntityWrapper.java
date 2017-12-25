@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import game.Entities.Dynamic;
+import game.Entities.Monster;
+import game.Entities.Pathable;
 import game.Entities.Projectile;
 import geo.Vector;
 
@@ -12,10 +14,12 @@ public class EntityWrapper
 	public HashSet<Entity> ents = new HashSet<Entity>(Shoot.MAX_MONST);
 	public HashSet<Projectile> projectiles = new HashSet<Projectile>(Shoot.MAX_MONST);
 	public HashSet<Dynamic> dynamics = new HashSet<Dynamic>(Shoot.MAX_MONST);
+	public HashSet<Pathable> pathEnts = new HashSet<Pathable>(Shoot.MAX_MONST);
 	
 	public ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	public ArrayList<Projectile> projToRemove = new ArrayList<Projectile>();
 	public ArrayList<Dynamic> dynamicToRemove = new ArrayList<Dynamic>();
+	public ArrayList<Pathable> pathEntsToRemove = new ArrayList<Pathable>();
 	
 	public void addProjectile(Projectile proj)
 	{
@@ -32,6 +36,21 @@ public class EntityWrapper
 		dynamics.add(d);
 	}
 	
+	public void autoAdd(Entity e)
+	{
+		if(e instanceof Projectile)
+			projectiles.add((Projectile) e);
+		if(e instanceof Dynamic)
+			dynamics.add((Dynamic) e);
+		if(e instanceof Pathable)
+			pathEnts.add((Pathable) e);
+		
+		ents.add(e);
+		
+		if(e instanceof Monster)
+			((Monster) e).spawn();
+	}
+	
 	public void removeProjectile(Projectile p)
 	{
 		projToRemove.add(p);
@@ -45,6 +64,24 @@ public class EntityWrapper
 	public void removeDynamic(Dynamic d)
 	{
 		dynamicToRemove.add(d);
+	}
+	
+	public void autoRemove(Entity e)
+	{
+		if(e instanceof Projectile)
+		{
+			projToRemove.add((Projectile) e);
+		}
+		if(e instanceof Dynamic)
+		{
+			dynamicToRemove.add((Dynamic) e);
+		}
+		if(e instanceof Pathable)
+		{
+			pathEntsToRemove.add((Pathable) e);
+		}
+		
+		toRemove.add(e);
 	}
 	
 	public void removeAllToRemove()

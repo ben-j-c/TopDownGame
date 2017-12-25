@@ -2,6 +2,7 @@ package game.Entities.Weapons;
 
 import game.Entity;
 import game.Shoot;
+import game.Entities.Monster;
 import game.Entities.Pickup;
 import game.Entities.Projectile;
 import game.Entities.Weapon;
@@ -35,7 +36,7 @@ public class LaserRifle extends Pickup implements Weapon
 			
 			for(Entity e : inst.entityWrapper.ents)
 			{
-				if(e.is(Entity.MONST))
+				if(e instanceof Monster)
 				{
 					double cos = e.pos.sub(pos).cos(headTo.sub(pos));
 					

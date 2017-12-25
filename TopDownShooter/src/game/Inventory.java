@@ -1,5 +1,6 @@
 package game;
 
+import game.Entities.Dynamic;
 import game.Entities.InventoryItem;
 
 public class Inventory
@@ -104,7 +105,17 @@ public class Inventory
 	
 	public void nextItem()
 	{
+		Shoot inst = Shoot.getInstance();
+		
+		InventoryItem inv = getSelected();
+		if(inv instanceof Dynamic)
+			inst.entityWrapper.dynamics.remove((Dynamic) inv);
+		
 		selectedIndex = (selectedIndex + 1)%size;
+		
+		inv = getSelected();
+		if(inv instanceof Dynamic)
+			inst.entityWrapper.dynamics.add((Dynamic) inv);
 	}
 	
 	public void previousItem()
