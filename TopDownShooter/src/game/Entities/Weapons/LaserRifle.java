@@ -42,7 +42,7 @@ public class LaserRifle extends Pickup implements Weapon
 					
 					Vector ab = headTo.sub(pos);
 					
-					if(e.pos.distance(pos, headTo) < Shoot.MONST_SIZE && cos >= 0  && e.pos.sub(pos).projectOnto(ab).magsqr() <= ab.magsqr())
+					if(e.pos.distance(pos, headTo) < e.getSize() && cos >= 0  && e.pos.sub(pos).projectOnto(ab).magsqr() <= ab.magsqr())
 					{
 						e.applyDamage(DAMAGE);
 					}

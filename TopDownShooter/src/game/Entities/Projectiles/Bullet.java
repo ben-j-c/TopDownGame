@@ -31,7 +31,7 @@ public class Bullet  extends Projectile
 		
 		double t = inst.calcIntersect(pos, nl).t; 
 		
-		Entity e = inst.getAdjacentEnt(pos, size);
+		Entity e = inst.getAdjacentEnt(pos);
 		
 		if(t > 1 && frames > 0 && e == null)
 		{
@@ -53,9 +53,11 @@ public class Bullet  extends Projectile
 	@Override
 	public void render(GL2 gl)
 	{
-		gl.glColor3d(Math.random()*0.5 +0.5, Math.random()*0.5, 0);
+		gl.glColor3d(Math.random()*0.25 +0.75, Math.random()*0.75, 0);
 		
 		gl.glBegin(GL2.GL_LINES);
+		
+		gl.glNormal3d(0, 0, 1);
 		gl.glVertex3d(pos.x, pos.y, 0);
 		Vector pos2 = pos.add(v);
 		gl.glVertex3d(pos2.x, pos2.y, 0);

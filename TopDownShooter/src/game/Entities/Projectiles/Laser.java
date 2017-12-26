@@ -35,11 +35,12 @@ public class Laser  extends Projectile
 	@Override
 	public void render(GL2 gl)
 	{
-		gl.glColor3d(Math.random()*0.5 +0.5, Math.random()*0.5, 0);
+		gl.glColor3d(Math.random()*0.25 +0.75, Math.random()*0.75, 0);
 		gl.glBegin(GL.GL_LINES);
 		
-		gl.glVertex2d(pos.x, pos.y);
-		gl.glVertex2d(headTo.x, headTo.y);
+		gl.glNormal3d(0, 0, 1);
+		gl.glVertex3d(pos.x, pos.y, 0);
+		gl.glVertex3d(headTo.x, headTo.y, 0);
 	}
 	
 }

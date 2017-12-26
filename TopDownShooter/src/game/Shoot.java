@@ -24,6 +24,7 @@ import game.Entities.Monster;
 import game.Entities.Pathable;
 import game.Entities.Projectile;
 import game.Entities.Weapon;
+import game.Entities.Monsters.BlobMonster;
 import game.Entities.Monsters.GMonster;
 import game.Entities.Monsters.Player;
 import game.Entities.Weapons.Flamethrower;
@@ -333,7 +334,13 @@ public class Shoot
 			
 			if(!Triangle.tooClose(pos, Triangle.DEFAULT_ERROR, mw.gameMap.geo))
 			{
-				GMonster monster = new GMonster(pos);	
+				Entity monster;
+				
+				if(this.r.nextDouble() < 0.8)
+					monster = new GMonster(pos);
+				else
+					monster = new BlobMonster(pos);
+				
 				entityWrapper.autoAdd(monster);
 			}
 		}
@@ -589,6 +596,19 @@ public class Shoot
 		{
 			Entity e = cycleData[i];
 			if(e.pos.skew(pos) < size)
+			{
+				return e;
+			}
+		}
+		return null;
+	}
+	
+	public Entity getAdjacentEnt(Vector pos)
+	{	
+		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
+		{
+			Entity e = cycleData[i];
+			if(e.pos.skew(pos) < e.getSize())
 			{
 				return e;
 			}

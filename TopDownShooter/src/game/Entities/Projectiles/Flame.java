@@ -31,7 +31,7 @@ public class Flame extends Projectile
 		
 		BlockingVector bv = inst.calcIntersect(pos, nl); 
 		
-		Entity e = inst.getAdjacentEnt(pos, Shoot.MONST_SIZE);
+		Entity e = inst.getAdjacentEnt(pos);
 		
 		if( frames <= 0)
 		{

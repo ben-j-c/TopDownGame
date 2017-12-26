@@ -68,12 +68,12 @@ public class Entity implements Comparable<Entity>
 		v = new Vector(e.v);
 		TYPE = e.TYPE;
 	}
-
+	
 	public boolean is(int TYPE)
 	{
 		return (this.TYPE & TYPE) != 0;
 	}
-
+	
 	public void applyDamage(double damage)
 	{
 		life -= damage;
@@ -88,7 +88,7 @@ public class Entity implements Comparable<Entity>
 			inst.entityWrapper.autoRemove(this);
 		}
 	}
-
+	
 	@Override
 	public int compareTo(Entity e)
 	{
@@ -160,31 +160,44 @@ public class Entity implements Comparable<Entity>
 		Shoot inst = Shoot.getInstance();
 		this.v = this.headTo.sub( this.pos).unitize();
 		
-		this.v.scaleset(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED);
+		this.v.scaleset(Shoot.PLAYER_SPEED*getSpeed());
 		Vector nv = new Vector(this.v);
 		
-		for(Entity f : inst.entityWrapper.ents)
-		{	
-			double skew = this.pos.skew(f.pos);
-			if(f instanceof Body && f != this && skew < Shoot.MONST_SIZE)
+		if(this instanceof Body)
+		{
+			for(Entity f : inst.entityWrapper.ents)
 			{	
-				Vector dir = this.pos.sub(f.pos);
-				nv.addset(
-						(dir.scale((Shoot.MONST_SIZE*Shoot.MONST_SIZE/(skew*skew))))
-						.scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
+				double skew = this.pos.skew(f.pos);
+				if(f instanceof Body && f != this && skew < getSize())
+				{
+					((Body) this).contact((Body) f);
+					((Body) f).contact((Body) this);
+					Vector dir = this.pos.sub(f.pos);
+					nv.addset(
+							(dir.scale((Shoot.MONST_SIZE*getSize()/(skew*skew))))
+							.scale(Shoot.PLAYER_SPEED*getSpeed()));
+				}
 			}
+			
+			//apply a random velocity of 5% to the current velocity to allow for more realistic movement
+			nv.addset(new Vector((Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005, (Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005));
+			
+			//The player is also solid, so do the same as before
+			double skew = this.pos.skew(inst.getPlayerPos());
+			nv.addset(this.pos.sub(inst.getPlayerPos()).unit().scale((getSize()/skew)*(getSize()/skew)).scale(Shoot.PLAYER_SPEED*getSpeed()));
+			this.v.set(nv.clamp(Shoot.PLAYER_SPEED*getSpeed()*1.5));
 		}
-		
-		//apply a random velocity of 5% to the current velocity to allow for more realistic movement
-		nv.addset(new Vector((Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005, (Shoot.r.nextDouble() - 0.5)*Shoot.MONST_SPEED*0.005));
-		
-		//The player is also solid, so do the same as before
-		double skew = this.pos.skew(inst.getPlayerPos());
-		nv.addset(this.pos.sub(inst.getPlayerPos()).unit().scale((Shoot.MONST_SIZE/skew)*(Shoot.MONST_SIZE/skew)).scale(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED));
-		this.v.set(nv.clamp(Shoot.PLAYER_SPEED*Shoot.MONST_SPEED*1.5));
-		
 		//Try to place the entity at a location closest to pos+v without intersecting geometry
 		this.newPos.set(Triangle.findClosestPos(this.pos, this.v, inst.mw.gameMap.geo));
 	}
 	
+	public double getSize()
+	{
+		return Shoot.MONST_SIZE;
+	}
+	
+	public double getSpeed()
+	{
+		return Shoot.MONST_SPEED;
+	}
 }
