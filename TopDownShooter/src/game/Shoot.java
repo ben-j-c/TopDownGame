@@ -584,6 +584,21 @@ public class Shoot
 		return ret;
 	}
 	
+	public ArrayList<Entity> getAdjacentEnts(Vector pos)
+	{
+		ArrayList<Entity> ret = new ArrayList<Entity>();
+		
+		for(int i = 0 ; i < entityWrapper.ents.size() ; i++)
+		{
+			Entity e = cycleData[i];
+			if(e.pos.skew(pos) < e.getSize())
+			{
+				ret.add(e);
+			}
+		}
+		return ret;
+	}
+	
 	/**
 	 * Get the first entity within the radius size
 	 * @param pos

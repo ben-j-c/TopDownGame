@@ -1,5 +1,7 @@
 package game.Entities.Projectiles;
 
+import java.util.ArrayList;
+
 import com.jogamp.opengl.GL2;
 
 import game.Entity;
@@ -31,7 +33,7 @@ public class Flame extends Projectile
 		
 		BlockingVector bv = inst.calcIntersect(pos, nl); 
 		
-		Entity e = inst.getAdjacentEnt(pos);
+		ArrayList<Entity> e = inst.getAdjacentEnts(pos);
 		
 		if( frames <= 0)
 		{
@@ -40,7 +42,8 @@ public class Flame extends Projectile
 		
 		if(e != null)
 		{
-			e.applyDamage(damage);
+			for(Entity f : e)
+				f.applyDamage(damage);
 		}
 		
 		if(bv.t <= 1)
