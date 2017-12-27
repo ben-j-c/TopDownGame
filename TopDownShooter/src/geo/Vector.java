@@ -95,7 +95,7 @@ public class Vector implements Comparable<Vector>
 	}
 	
 	/**
-	 * Get the angle between this and b
+	 * Get the cos of the angle between this and b
 	 * @param b
 	 * @return the angle between this and b
 	 */
@@ -275,5 +275,11 @@ public class Vector implements Comparable<Vector>
 		}
 		
 		return this.copy();
+	}
+	public Vector rotate(double theta)
+	{
+		return new Vector(
+				x*Math.cos(theta) - y*Math.sin(theta),
+				y*Math.cos(theta) + x*Math.sin(theta));
 	}
 }
