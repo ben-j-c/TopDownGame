@@ -89,10 +89,12 @@ public class EntityWrapper
 		ents.removeAll(toRemove);
 		projectiles.removeAll(projToRemove);
 		dynamics.removeAll(dynamicToRemove);
+		pathEnts.removeAll(pathEntsToRemove);
 		
 		toRemove.clear();
 		projToRemove.clear();
 		dynamicToRemove.clear();
+		pathEntsToRemove.clear();
 	}
 	
 	public void clear()
