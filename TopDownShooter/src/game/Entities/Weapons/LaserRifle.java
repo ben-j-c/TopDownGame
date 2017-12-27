@@ -95,7 +95,7 @@ public class LaserRifle extends Pickup implements Weapon
 	{
 		Shoot inst = Shoot.getInstance();
 		
-		Rifle held = (Rifle) inst.getInventoryItem(Rifle.class);
+		LaserRifle held = (LaserRifle) inst.getInventoryItem(LaserRifle.class);
 		
 		held.ammo += ammo;
 		
