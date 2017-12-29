@@ -21,7 +21,7 @@ public class BlobMonster extends GMonster
 	public static final double MONST_G_OFFSET = 0;
 	public static final double MONST_B_OFFSET = 0.4;
 	public static final double MONST_SPEED = 0.5;
-	public double size = 0.025;
+	public double size = 0.005;
 	
 	public BlobMonster(Vector spawn)
 	{
@@ -54,7 +54,7 @@ public class BlobMonster extends GMonster
 	public void render(GL2 gl)
 	{
 		gl.glColor3d(r,g,b);
-		Display.drawCube(gl, 0.2*size, pos.x, pos.y, 0.01);
+		Display.drawCube(gl, size, pos.x, pos.y, 0.01);
 	}
 	
 	@Override

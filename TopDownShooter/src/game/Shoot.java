@@ -46,7 +46,7 @@ public class Shoot
 	public static final double PARTICLE_SPEED = 0.02;
 	public static final int MAX_MONST = 1000;
 	public static final double MONST_SPEED = 0.8;
-	public static final double MONST_SIZE = 0.025;
+	public static final double MONST_SIZE = 0.005;
 	public static final double SPAWN_PROB = 1;
 	public static final double SPAWN_DIST = 1.5;
 	public static final double SPAWN_DIST_VARIATION = 1.5;

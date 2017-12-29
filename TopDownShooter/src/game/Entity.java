@@ -98,7 +98,7 @@ public class Entity implements Comparable<Entity>
 	public void render(GL2 gl)
 	{
 		gl.glColor3d(r,g,b);
-		Display.drawCube(gl, 0.005, pos.x, pos.y, 0.01);
+		Display.drawCube(gl, getSize(), pos.x, pos.y, 0.01);
 	}
 	
 	public Vector getNextMoveTo()
@@ -122,7 +122,7 @@ public class Entity implements Comparable<Entity>
 			{
 				GMonster other = (GMonster) p;
 				if(other.headTo != null
-						&& other.pos.sub(this.pos).magsqr() < 4*Shoot.MONST_SIZE*Shoot.MONST_SIZE
+						&& other.pos.sub(this.pos).magsqr() < 20*Shoot.MONST_SIZE
 						&& Triangle.clearline(this.pos, other.headTo, inst.mw.gameMap.geo))
 				{
 					return other.headTo.copy();
@@ -166,13 +166,16 @@ public class Entity implements Comparable<Entity>
 		if(this instanceof Body)
 		{
 			for(Entity f : inst.entityWrapper.ents)
-			{	
+			{
 				double skew = this.pos.skew(f.pos);
-				if(f instanceof Body && f != this && skew < getSize())
+				if(f instanceof Body && f != this && skew < 2.5*getSize())
 				{
-					((Body) this).contact((Body) f);
-					((Body) f).contact((Body) this);
-					Vector dir = this.pos.sub(f.pos);
+					if(skew < getSize())
+					{
+						((Body) this).contact((Body) f);
+						((Body) f).contact((Body) this);
+					}
+					Vector dir = this.pos.sub(f.pos).unitize();
 					nv.addset(
 							(dir.scale((Shoot.MONST_SIZE*getSize()/(skew*skew))))
 							.scale(Shoot.PLAYER_SPEED*getSpeed()));
