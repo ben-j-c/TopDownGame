@@ -101,6 +101,38 @@ public class Entity implements Comparable<Entity>
 		Display.drawCube(gl, getSize(), pos.x, pos.y, 0.01);
 	}
 	
+	public Vector getPrecalcMove()
+	{
+		Shoot inst = Shoot.getInstance();
+		Vector pos = inst.getPlayerPos();
+		
+		//BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
+		
+		boolean canSee = Triangle.clearline(this.pos, pos, inst.mw.gameMap.geo);
+		
+		if(canSee)
+		{
+			return pos.copy();
+		}
+		
+		Vector next = this.pos;
+		double cost = Triangle.LARGE_VALUE;
+		for(Vector v: inst.mw.gameMap.desc.getNodes())
+		{
+			if(Triangle.clearline(this.pos, v, inst.mw.gameMap.geo))
+			{
+				double newCost = this.pos.sub(v).mag() + inst.mw.descWithPlayer.getCost(v, pos);
+				if(newCost < cost)
+				{
+					next = v;
+					cost = newCost;
+				}
+			}
+		}
+		
+		return next;
+	}
+	
 	public Vector getNextMoveTo()
 	{
 		Shoot inst = Shoot.getInstance();

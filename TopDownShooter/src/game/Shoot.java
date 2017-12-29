@@ -292,6 +292,7 @@ public class Shoot
 		}
 		
 		mw.descWithPlayer = new Dijkstra.Description(mw.gameMap.desc, extraNodes, extraEdges);
+		mw.descWithPlayer.calculateCost(player.pos);
 	}
 	/**
 	 * Move all projectiles

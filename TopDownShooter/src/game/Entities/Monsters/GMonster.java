@@ -42,7 +42,7 @@ public class GMonster extends Entity implements Pathable, Body, Monster
 	@Override
 	public void path()
 	{
-		headTo = getNextMoveTo();
+		headTo = getPrecalcMove();
 		stepMoveMonster();
 	}
 	

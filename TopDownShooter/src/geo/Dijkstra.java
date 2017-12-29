@@ -1,5 +1,6 @@
 package geo;
 
+import game.Shoot;
 import util.dstruct.Queue;
 
 /**
@@ -18,6 +19,7 @@ public final class Dijkstra
 	{
 		private java.util.TreeSet<Vector> nodes = new java.util.TreeSet<Vector>();
 		private java.util.TreeSet<Edge> edges = new java.util.TreeSet<Edge>();
+		private java.util.HashMap<Edge, Double> cost;
 		
 		/**
 		 * Do nothing else
@@ -52,6 +54,47 @@ public final class Dijkstra
 				this.edges.add(e);
 			}
 		}
+		
+		/**
+		 * Calculate the cost between any two nodes and store it in a tree map
+		 */
+		public void calculateCost(Vector pos)
+		{
+			 cost = new java.util.HashMap<Edge, Double>(nodes.size());
+			
+			for(Vector a : nodes)
+			{
+				java.util.ArrayList<Vector> path = getShortestPath(a, pos, this);
+				double thisCost = 0.0;
+				for(int i = 1 ; i < path.size() ; i++)
+				{
+					thisCost += path.get(i).sub(path.get(i-1)).mag();
+				}
+				cost.put(new Edge(a,pos), thisCost);
+			}
+		}
+		
+		/**
+		 * Return the precalculated cost from the tree map
+		 * @return
+		 */
+		public double getCost(Vector a, Vector b)
+		{
+			try
+			{
+				return cost.get(new Edge(a,b));
+			}
+			catch(NullPointerException e)
+			{
+				System.out.println("\n\n\n" + a);
+				System.out.println(b);
+				System.out.println(Shoot.getInstance().mw.descWithPlayer);
+			}
+			
+			return Triangle.LARGE_VALUE;
+		}
+		
+		
 		/**
 		 * 
 		 * @param node a node in the description
@@ -152,9 +195,27 @@ public final class Dijkstra
 		}
 		
 		@Override
+		public boolean equals(Object o)
+		{
+			if(o instanceof Edge)
+			{
+				Edge e = (Edge) o;
+				return (e.a.equals(this.a)&&e.b.equals(this.b) || e.b.equals(this.a)&&e.a.equals(this.b));
+			}
+						
+			return false;
+		}
+		
+		@Override
 		public String toString()
 		{
 			return "{ " + a + ", " + b + "}";
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return Double.hashCode(a.x + a.y + b.x + b.y); 
 		}
 	}
 	
