@@ -64,7 +64,7 @@ public final class Dijkstra
 			
 			for(Vector a : nodes)
 			{
-				java.util.ArrayList<Vector> path = getShortestPath(a, pos, this);
+				java.util.ArrayList<Vector> path = AStar.getShortestPath(a, pos, this);
 				double thisCost = 0.0;
 				for(int i = 1 ; i < path.size() ; i++)
 				{
