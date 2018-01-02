@@ -39,7 +39,7 @@ import game.multithread.MT_Generic;
 public class Shoot
 {
 	//Constants
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.009;
 	public static final int INVENTORY_SIZE = 5;

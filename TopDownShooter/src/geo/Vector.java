@@ -233,6 +233,22 @@ public class Vector implements Comparable<Vector>
 	}
 	
 	/**
+	 * Checks to see if this vector is within skew, R, of the line AB, and inside the region between A and B. 
+	 * @param a point A on the line AB
+	 * @param b point B on the line AB
+	 * @param skew R. The max distance this can be from AB and still return true
+	 * @return true if this lies within R units of the line AB and sits between A and B
+	 */
+	public boolean isLineBounded(Vector a, Vector b, double skew)
+	{
+		double abCos = this.sub(a).cos(b.sub(a)); 
+		double baCos = this.sub(b).cos(a.sub(b));
+		return (this.distance(a, b) < skew //if the testPos is within skew of the line
+				&& abCos >= 0   //and is not behind AB
+				&& baCos >= 0); //and is not behind BA 
+	}
+	
+	/**
 	 * Get a copy of this Vector
 	 * @return A copy of this vector
 	 */

@@ -43,29 +43,61 @@ public class ControlMouse implements MouseListener
 	{
 		if(!inst.GAME_STARTED)
 		{
-			if(inst.PLACE_GRAPH)
+			if(inst.PLACE_GRAPH) //placing nodes
 			{
 				Vector temp = inst.translateToReal(e.getX(), e.getY());
-				
-				Vector temp2 = mw.gameMap.desc.getSkewed(temp, Shoot.SNAP_DISTANCE*Shoot.SNAP_DISTANCE);
-				if(temp2 == null)
+				if(e.getButton() == MouseEvent.BUTTON1)
 				{
-					points.add(temp);
-					mw.gameMap.desc.addNode(temp);
+					Vector snapVector = mw.gameMap.desc.getSkewed(temp, Shoot.SNAP_DISTANCE*Shoot.SNAP_DISTANCE);
+					geo.Dijkstra.Edge snapEdge = mw.gameMap.desc.getSkewedEdge(temp, Shoot.SNAP_DISTANCE);
+					
+					System.out.println(snapVector);
+					System.out.println(snapEdge);
+					
+					if(snapVector != null)
+						System.out.println(mw.gameMap.desc.getNodes().contains(snapVector));
+					if(snapEdge != null)
+						System.out.println(mw.gameMap.desc.getEdges().contains(snapEdge));
+					
+					if(e.isAltDown())
+					{
+						if(snapVector != null)
+						{
+							mw.gameMap.desc.removeNode(snapVector);
+						}
+						else if(snapEdge != null)
+						{
+							mw.gameMap.desc.removeEdge(snapEdge);
+						}
+						
+						points.clear();
+					}
+					else
+					{
+						if(snapVector == null)
+						{
+							points.add(temp);
+							mw.gameMap.desc.addNode(temp);
+						}
+						else
+						{
+							points.add(snapVector);
+							mw.gameMap.desc.addNode(snapVector);
+						}
+						
+						if(points.size() == 2)
+						{
+							mw.gameMap.desc.addEdge(points.remove(0), points.remove(0));
+							points.clear();
+						}
+					}
 				}
-				else
+				else if(e.getButton() == MouseEvent.BUTTON2)
 				{
-					points.add(temp2);
-					mw.gameMap.desc.addNode(temp2);
+					
 				}
-				
-				if(points.size() == 2)
-				{
-					mw.gameMap.desc.addEdge(points.remove(0), points.remove(0));
-					points.clear();
-				}
-			}
-			else
+			}// inst.PLACE_GRAPH
+			else //placing triangles
 			{
 				Vector temp = inst.translateToReal(e.getX(), e.getY());
 				
@@ -90,7 +122,7 @@ public class ControlMouse implements MouseListener
 						mw.gameMap.geo.add(t);
 					}
 				}
-			} 
+			}// else placing triangle 
 		} //!inst.GAME_STARTED
 		else
 		{

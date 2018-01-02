@@ -17,8 +17,8 @@ public final class Dijkstra
 	 */
 	public static class Description
 	{
-		private java.util.TreeSet<Vector> nodes = new java.util.TreeSet<Vector>();
-		private java.util.TreeSet<Edge> edges = new java.util.TreeSet<Edge>();
+		private java.util.HashSet<Vector> nodes = new java.util.HashSet<Vector>();
+		private java.util.HashSet<Edge> edges = new java.util.HashSet<Edge>();
 		private java.util.HashMap<Edge, Double> cost;
 		
 		/**
@@ -113,7 +113,12 @@ public final class Dijkstra
 			
 			return returner;
 		}
-		
+		/**
+		 * Looks for the first vector that lies within the squared radius, skewSqr, around the vector skew.
+		 * @param skew tested vector
+		 * @param skewSqr square of the skew required
+		 * @return
+		 */
 		public Vector getSkewed(Vector skew, double skewSqr)
 		{
 			Vector ret = null;
@@ -137,17 +142,23 @@ public final class Dijkstra
 			
 			edges.add(new Edge(a,b));
 		}
+		
+		public void removeEdge(Edge edge)
+		{
+			edges.remove(edge);
+		}
+		
 		/**
 		 * @return the nodes
 		 */
-		public java.util.TreeSet<Vector> getNodes()
+		public java.util.HashSet<Vector> getNodes()
 		{
 			return nodes;
 		}
 		/**
 		 * @return the edges
 		 */
-		public java.util.TreeSet<Edge> getEdges()
+		public java.util.HashSet<Edge> getEdges()
 		{
 			return edges;
 		}
@@ -156,12 +167,33 @@ public final class Dijkstra
 			nodes.add(node);
 		}
 		
+		public void removeNode(Vector node)
+		{
+			java.util.ArrayList<Vector> neighbor = this.getNeighbor(node);
+			
+			for(Vector other: neighbor)
+			{
+				this.removeEdge(new Edge(node, other));
+			}
+			
+			nodes.remove(node);
+		}
+		
 		@Override
 		public String toString()
 		{
 			return "Nodes: " + nodes + "\nEdges: " + edges;
 		}
 		
+		public Edge getSkewedEdge(Vector testPos, double skew)
+		{
+			for(Edge e : edges)
+			{
+				if(testPos.isLineBounded(e.a, e.b, skew))
+					return e;
+			}
+			return null;
+		}
 	}
 	public static class Edge implements Comparable<Edge>
 	{
