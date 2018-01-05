@@ -34,11 +34,15 @@ public class MT_EntMovement implements Runnable
 		counter.set(0);
 		progress.set(0);
 		
-		////Prepath 
+		long[] a = new long[4];
+		
+		////Prepath
+		a[0] = System.nanoTime();
 		for(Pathable e : paths)
 		{
 			e.prePath();
 		}
+		a[1] = System.nanoTime();
 		
 		cycleData = paths.toArray();
 		
@@ -60,11 +64,17 @@ public class MT_EntMovement implements Runnable
 				}
 			}
 		}
-		
+		a[2] = System.nanoTime();
 		////Postpath
 		for(Pathable p: paths)
 		{
 			p.postPath();
+		}
+		a[3] = System.nanoTime();
+		
+		if(Shoot.DEBUG && Shoot.getInstance().getGameTime()%25 == 0)
+		{	
+			System.out.printf("\tMM: pre:%d + calc:%d + post:%d = %d\n\n", a[1] - a[0], a[2] - a[1], a[3] - a[2], a[3] - a[0]);
 		}
 		
 	}

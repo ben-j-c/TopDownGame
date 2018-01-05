@@ -36,6 +36,7 @@ public class GMonster extends Entity implements Pathable, Body, Monster
 	@Override
 	public void prePath()
 	{
+		lastHeadTo = headTo;
 		headTo = null;
 	}
 	

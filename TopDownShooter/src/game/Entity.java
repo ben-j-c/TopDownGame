@@ -36,6 +36,7 @@ public class Entity implements Comparable<Entity>
 	public Vector pos;
 	public Vector newPos;
 	public Vector headTo;
+	public Vector lastHeadTo;
 	public Vector v;
 	public double life = 100;
 	
@@ -114,23 +115,30 @@ public class Entity implements Comparable<Entity>
 		{
 			return pos.copy();
 		}
-		
-		Vector next = this.pos;
-		double cost = Triangle.LARGE_VALUE;
-		for(Vector v: inst.mw.gameMap.desc.getNodes())
+		else if(lastHeadTo == null || ((inst.getGameTime() + id) & 0b111) == 0 )
 		{
-			if(Triangle.clearline(this.pos, v, inst.mw.gameMap.geo))
+			
+			Vector next = this.pos;
+			double cost = Triangle.LARGE_VALUE;
+			for(Vector v: inst.mw.gameMap.desc.getNodes())
 			{
-				double newCost = this.pos.sub(v).mag() + inst.mw.descWithPlayer.getCost(v, pos);
-				if(newCost < cost)
+				if(Triangle.clearline(this.pos, v, inst.mw.gameMap.geo))
 				{
-					next = v;
-					cost = newCost;
+					double newCost = this.pos.sub(v).mag() + inst.mw.descWithPlayer.getCost(v, pos);
+					if(newCost < cost)
+					{
+						next = v;
+						cost = newCost;
+					}
 				}
 			}
+			return next;
+		}
+		else
+		{
+			return lastHeadTo;
 		}
 		
-		return next;
 	}
 	
 	public Vector getNextMoveTo()
