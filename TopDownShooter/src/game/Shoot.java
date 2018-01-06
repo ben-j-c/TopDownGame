@@ -39,7 +39,7 @@ import game.multithread.MT_Generic;
 public class Shoot
 {
 	//Constants
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	public static final double SNAP_DISTANCE = 0.025;
 	public static final double PLAYER_SPEED = 0.009;
 	public static final int INVENTORY_SIZE = 5;
@@ -283,7 +283,7 @@ public class Shoot
 		
 		for(Vector v: mw.gameMap.desc.getNodes())
 		{
-			boolean canSee = Triangle.clearline(player.pos, v, mw.gameMap.geo);
+			boolean canSee = inst.mw.gameMap.clearLine(player.pos,v);//Triangle.clearline(player.pos, v, mw.gameMap.geo);
 			
 			if(canSee)
 			{

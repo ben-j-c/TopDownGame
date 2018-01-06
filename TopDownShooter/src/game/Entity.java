@@ -109,7 +109,7 @@ public class Entity implements Comparable<Entity>
 		
 		//BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
 		
-		boolean canSee = Triangle.clearline(this.pos, pos, inst.mw.gameMap.geo);
+		boolean canSee = inst.mw.gameMap.clearLine(this.pos,  pos);//Triangle.clearline(this.pos, pos, inst.mw.gameMap.geo);
 		
 		if(canSee)
 		{
@@ -122,7 +122,7 @@ public class Entity implements Comparable<Entity>
 			double cost = Triangle.LARGE_VALUE;
 			for(Vector v: inst.mw.gameMap.desc.getNodes())
 			{
-				if(Triangle.clearline(this.pos, v, inst.mw.gameMap.geo))
+				if( inst.mw.gameMap.clearLine(this.pos, v))//Triangle.clearline(this.pos, v, inst.mw.gameMap.geo))
 				{
 					double newCost = this.pos.sub(v).mag() + inst.mw.descWithPlayer.getCost(v, pos);
 					if(newCost < cost)
@@ -148,7 +148,7 @@ public class Entity implements Comparable<Entity>
 		
 		//BlockingVector bv = Triangle.calcIntersect(e.pos, player.pos, gameMap.geo);
 		
-		boolean canSee = Triangle.clearline(this.pos, pos, inst.mw.gameMap.geo);
+		boolean canSee = inst.mw.gameMap.clearLine(this.pos, pos);// Triangle.clearline(this.pos, pos, inst.mw.gameMap.geo);
 		
 		if(canSee)
 		{
@@ -163,7 +163,7 @@ public class Entity implements Comparable<Entity>
 				GMonster other = (GMonster) p;
 				if(other.headTo != null
 						&& other.pos.sub(this.pos).magsqr() < 20*Shoot.MONST_SIZE
-						&& Triangle.clearline(this.pos, other.headTo, inst.mw.gameMap.geo))
+						&&  inst.mw.gameMap.clearLine(this.pos, other.headTo))//Triangle.clearline(this.pos, other.headTo, inst.mw.gameMap.geo))
 				{
 					return other.headTo.copy();
 				}
@@ -177,7 +177,7 @@ public class Entity implements Comparable<Entity>
 		
 		for(Vector v: inst.mw.gameMap.desc.getNodes())
 		{
-			canSee = Triangle.clearline(this.pos, v, inst.mw.gameMap.geo);
+			canSee = inst.mw.gameMap.clearLine(this.pos, v);//clearline(this.pos, v, inst.mw.gameMap.geo);
 			
 			if(canSee)
 			{
