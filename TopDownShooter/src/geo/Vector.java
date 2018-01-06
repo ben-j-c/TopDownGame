@@ -337,4 +337,11 @@ public class Vector implements Comparable<Vector>
 		double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
 		return t;
 	}
+	public static boolean isIntersecting(Vector a, Vector b, Vector la, Vector lb)
+	{
+		Vector ab = b.sub(a);
+		double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
+		
+		return t > 0 && t < 1;
+	}
 }

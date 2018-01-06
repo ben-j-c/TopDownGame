@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.TreeSet;
 
@@ -18,6 +19,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import game.Shoot;
+
 public class Map
 {
 	public TreeSet<Triangle> geo = new TreeSet<Triangle>();
@@ -26,11 +29,17 @@ public class Map
 	
 	public static class Line
 	{
+		private int id;
+		private static int count = 0;
 		Vector a, b;
 		Vector ab;
 		
 		Line(Vector a, Vector b)
 		{
+			synchronized(Line.class)
+			{
+				id = count++;
+			}
 			this.a = a;
 			this.b = b;
 			ab = b.sub(a);
@@ -77,7 +86,7 @@ public class Map
 						|| Math.abs(crossA) <= Triangle.DEFAULT_ERROR
 						|| Math.abs(crossB) <= Triangle.DEFAULT_ERROR)//A and B are on the same side
 				{
-					if(crossA > Triangle.DEFAULT_ERROR) //to the left
+					if(crossA + crossB > Triangle.DEFAULT_ERROR) //to the left
 						cur.left = add(cur.left, l);
 					else
 						cur.right = add(cur.right, l);
@@ -91,7 +100,6 @@ public class Map
 						Vector bisect = l.a.add(l.b.sub(l.a).scale(t));
 						Line la = new Line(l.a, bisect);
 						Line lb = new Line(bisect, l.b);
-						
 						if(crossA > 0)//if a was on the left
 						{
 							cur.left = add(cur.left, la);
@@ -107,6 +115,43 @@ public class Map
 			}
 			
 			return cur;
+		}
+		
+		public String toString()
+		{
+			StringBuilder sbr = new StringBuilder(50);
+			sbr.append(data.id);
+			sbr.append(" L: ");
+			sbr.append( (left != null)? left.data.id : -1);
+			sbr.append(" R: ");
+			sbr.append( (right != null)? right.data.id : -1);
+			sbr.append(" ( ");
+			sbr.append(data.a);
+			sbr.append(" -> ");
+			sbr.append(data.b);
+			sbr.append(" )");
+			
+			return sbr.toString();
+		}
+		
+		public void printTree()
+		{
+			ArrayList<BSPNode> nodes = new ArrayList<BSPNode>();
+			nodes.add(this);
+			
+			while(!nodes.isEmpty())
+			{
+				BSPNode cur = nodes.remove(0);
+				System.out.println(cur);
+				if(cur.left != null)
+				{
+					nodes.add(cur.left);
+				}
+				if(cur.right != null)
+				{
+					nodes.add(cur.right);
+				}
+			}
 		}
 	}
 	
@@ -125,7 +170,7 @@ public class Map
 			{
 				if(geoFile.getName().equalsIgnoreCase("geo"))
 				{
-					loadGeo(geoFile);
+					loadGeoBSP(geoFile);
 					break;
 				}
 			}
@@ -222,6 +267,45 @@ public class Map
 				this.geo.add(toAdd);
 			}
 		}
+		
+		s.close();
+	}
+	
+	private void loadGeoBSP(File geoFile) throws Exception
+	{
+		geo.clear();
+		
+		Scanner s = new Scanner(geoFile);
+		s.useDelimiter("[^-?\\d\\.?\\d*]+");
+		
+		while(s.hasNext())
+		{
+			Vector[] temp = new Vector[3];
+			for(int i = 0 ; i < 3 ;i++)
+			{
+				if(s.hasNext())
+				{
+					temp[i] = new Vector(s.nextDouble(), s.nextDouble());
+				}
+				else
+				{
+					throw new Exception("Missing " + (3 - i) + " points in geoFile\n");
+				}
+			}
+			
+			Triangle toAdd = new Triangle(temp[0], temp[1], temp[2]);
+			if(!toAdd.isFlat())
+			{
+				this.geo.add(toAdd);
+				
+				this.head = BSPNode.add(head, new Line(toAdd.a, toAdd.b));
+				this.head = BSPNode.add(head, new Line(toAdd.b, toAdd.c));
+				this.head = BSPNode.add(head, new Line(toAdd.c, toAdd.a));
+			}
+		}
+		
+		if(Shoot.getInstance().DEBUG)
+			head.printTree();
 		
 		s.close();
 	}
@@ -359,7 +443,7 @@ public class Map
 				try
 				{
 					handler.loadDesc(new File("Maps//" + tfMapname.getText() + "//" + "desc" ));
-					handler.loadGeo(new File("Maps//" + tfMapname.getText() + "//" + "geo" ));
+					handler.loadGeoBSP(new File("Maps//" + tfMapname.getText() + "//" + "geo" ));
 				}
 				catch (Exception e1)
 				{
@@ -380,6 +464,41 @@ public class Map
 					e1.printStackTrace();
 				}
 			}
+		}
+		
+		public boolean clearLine(Vector a, Vector b)
+		{
+			ArrayList<BSPNode> check = new ArrayList<BSPNode>(50);
+			
+			check.add(head);
+			
+			while(!check.isEmpty())
+			{
+				BSPNode cur = check.remove(0);
+				double crossA = cur.data.ab.cross(a.sub(cur.data.a));
+				double crossB = cur.data.ab.cross(b.sub(cur.data.a));
+				
+				if(crossA > 0 || crossB > 0)
+				{
+					if(cur.left != null)
+						check.add(cur.left);
+				}
+				else if(crossA < 0 || crossB < 0)
+				{
+					if(cur.right != null)
+						check.add(cur.right);
+				}
+				
+				Vector ab = b.sub(a);
+				double t = Vector.lineSegIntersectLine(cur.data.a, cur.data.b, ab, a, b);
+				
+				//Check to see if this edge intersects the given line
+				if(t > 0 && t < 0
+						&& ab.scale(t).add(a).isLineBounded(cur.data.a, cur.data.b, Triangle.DEFAULT_ERROR))
+					return true;
+			}
+			
+			return false;
 		}
 	}
 }
