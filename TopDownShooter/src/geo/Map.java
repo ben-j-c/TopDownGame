@@ -356,7 +356,8 @@ public class Map
 	{
 		ArrayList<BSPNode> check = new ArrayList<BSPNode>(50);
 		
-		check.add(head);
+		if(head != null)
+			check.add(head);
 		
 		while(!check.isEmpty())
 		{
@@ -381,10 +382,10 @@ public class Map
 			//Check to see if this edge intersects the given line
 			if(t > 0 && t < 0
 					&& ab.scale(t).add(a).isLineBounded(cur.data.a, cur.data.b, Triangle.DEFAULT_ERROR))
-				return true;
+				return false;
 		}
 		
-		return false;
+		return true;
 	}
 	
 	private class MapDialog implements ActionListener
