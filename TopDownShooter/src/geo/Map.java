@@ -21,7 +21,94 @@ import javax.swing.JTextField;
 public class Map
 {
 	public TreeSet<Triangle> geo = new TreeSet<Triangle>();
+	private BSPNode head = null;
 	public Dijkstra.Description desc = new Dijkstra.Description();
+	
+	public static class Line
+	{
+		Vector a, b;
+		Vector ab;
+		
+		Line(Vector a, Vector b)
+		{
+			this.a = a;
+			this.b = b;
+			ab = b.sub(a);
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if(o == this)
+				return true;
+			else if(o instanceof Line)
+			{
+				Line l = (Line) o;
+				
+				return a.equals(l.a) && b.equals(l.b);
+			}
+			
+			return false;
+		}
+	}
+	
+	public static class BSPNode
+	{
+		Line data;
+		
+		BSPNode left = null;
+		BSPNode right = null;
+		
+		BSPNode(Line l)
+		{
+			data = l;
+		}
+		
+		public static BSPNode add(BSPNode cur, Line l)
+		{
+			if(cur == null)
+				return new BSPNode(l);
+			else
+			{
+				double crossA = cur.data.ab.cross(l.a.sub(cur.data.a));
+				double crossB = cur.data.ab.cross(l.b.sub(cur.data.a));
+				
+				if(Math.signum(crossA) == Math.signum(crossB)
+						|| Math.abs(crossA) <= Triangle.DEFAULT_ERROR
+						|| Math.abs(crossB) <= Triangle.DEFAULT_ERROR)//A and B are on the same side
+				{
+					if(crossA > Triangle.DEFAULT_ERROR) //to the left
+						cur.left = add(cur.left, l);
+					else
+						cur.right = add(cur.right, l);
+				}
+				else//cur bisects l
+				{
+					double t = Vector.lineSegIntersectLine(cur.data.a, cur.data.b, cur.data.ab, l.a, l.b);
+					
+					if(t > 0 && t < 1)
+					{
+						Vector bisect = l.a.add(l.b.sub(l.a).scale(t));
+						Line la = new Line(l.a, bisect);
+						Line lb = new Line(bisect, l.b);
+						
+						if(crossA > 0)//if a was on the left
+						{
+							cur.left = add(cur.left, la);
+							cur.right = add(cur.right, lb);
+						}
+						else
+						{
+							cur.right = add(cur.right, la);
+							cur.left = add(cur.left, lb);
+						}
+					}
+				}
+			}
+			
+			return cur;
+		}
+	}
 	
 	public Map()
 	{
