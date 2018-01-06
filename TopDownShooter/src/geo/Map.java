@@ -352,6 +352,41 @@ public class Map
 		ps.close();
 	}
 	
+	public boolean clearLine(Vector a, Vector b)
+	{
+		ArrayList<BSPNode> check = new ArrayList<BSPNode>(50);
+		
+		check.add(head);
+		
+		while(!check.isEmpty())
+		{
+			BSPNode cur = check.remove(0);
+			double crossA = cur.data.ab.cross(a.sub(cur.data.a));
+			double crossB = cur.data.ab.cross(b.sub(cur.data.a));
+			
+			if(crossA > 0 || crossB > 0)
+			{
+				if(cur.left != null)
+					check.add(cur.left);
+			}
+			else if(crossA < 0 || crossB < 0)
+			{
+				if(cur.right != null)
+					check.add(cur.right);
+			}
+			
+			Vector ab = b.sub(a);
+			double t = Vector.lineSegIntersectLine(cur.data.a, cur.data.b, ab, a, b);
+			
+			//Check to see if this edge intersects the given line
+			if(t > 0 && t < 0
+					&& ab.scale(t).add(a).isLineBounded(cur.data.a, cur.data.b, Triangle.DEFAULT_ERROR))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	private class MapDialog implements ActionListener
 	{
 		JTextField tfMapname;
@@ -464,41 +499,6 @@ public class Map
 					e1.printStackTrace();
 				}
 			}
-		}
-		
-		public boolean clearLine(Vector a, Vector b)
-		{
-			ArrayList<BSPNode> check = new ArrayList<BSPNode>(50);
-			
-			check.add(head);
-			
-			while(!check.isEmpty())
-			{
-				BSPNode cur = check.remove(0);
-				double crossA = cur.data.ab.cross(a.sub(cur.data.a));
-				double crossB = cur.data.ab.cross(b.sub(cur.data.a));
-				
-				if(crossA > 0 || crossB > 0)
-				{
-					if(cur.left != null)
-						check.add(cur.left);
-				}
-				else if(crossA < 0 || crossB < 0)
-				{
-					if(cur.right != null)
-						check.add(cur.right);
-				}
-				
-				Vector ab = b.sub(a);
-				double t = Vector.lineSegIntersectLine(cur.data.a, cur.data.b, ab, a, b);
-				
-				//Check to see if this edge intersects the given line
-				if(t > 0 && t < 0
-						&& ab.scale(t).add(a).isLineBounded(cur.data.a, cur.data.b, Triangle.DEFAULT_ERROR))
-					return true;
-			}
-			
-			return false;
 		}
 	}
 }
