@@ -275,7 +275,8 @@ public class Triangle implements Comparable<Triangle>
 		{
 			//t = (abXa-abXla)/abXlalb
 			
-			double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
+			//double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
+			double t = Vector.lineSegIntersectLine(a, b, ab, la, lb);
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
@@ -289,7 +290,8 @@ public class Triangle implements Comparable<Triangle>
 		{
 			//t = (abXa-abXla)/abXlalb
 			
-			double t = (bc.cross(b)-bc.cross(la))/bc.cross(lb.sub(la));
+			//double t = (bc.cross(b)-bc.cross(la))/bc.cross(lb.sub(la));
+			double t = Vector.lineSegIntersectLine(b, c, bc, la, lb);
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			
@@ -303,7 +305,8 @@ public class Triangle implements Comparable<Triangle>
 		{
 			//t = (abXa-abXla)/abXlalb
 			
-			double t = (ca.cross(c)-ca.cross(la))/ca.cross(lb.sub(la));
+			//double t = (ca.cross(c)-ca.cross(la))/ca.cross(lb.sub(la));
+			double t = Vector.lineSegIntersectLine(c, a, ca, la, lb);
 			
 			Vector r = la.add(lb.sub(la).scale(t));
 			

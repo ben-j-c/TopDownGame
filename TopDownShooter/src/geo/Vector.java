@@ -315,7 +315,7 @@ public class Vector implements Comparable<Vector>
 	public static double lineSegIntersectLine(Vector a, Vector b, Vector la, Vector lb)
 	{	
 		Vector ab = b.sub(a);
-		double t = -(ab.cross(a.sub(la)))/ab.cross(lb.sub(la));
+		double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
 		return t;
 	}
 	
@@ -334,7 +334,7 @@ public class Vector implements Comparable<Vector>
 	 */
 	public static double lineSegIntersectLine(Vector a, Vector b, Vector ab, Vector la, Vector lb)
 	{
-		double t = -(ab.cross(a.sub(la)))/ab.cross(lb.sub(la));
+		double t = (ab.cross(a)-ab.cross(la))/ab.cross(lb.sub(la));
 		return t;
 	}
 }
