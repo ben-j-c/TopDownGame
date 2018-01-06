@@ -292,10 +292,49 @@ public class Vector implements Comparable<Vector>
 		
 		return this.copy();
 	}
-	public Vector rotate(double theta)
+	public  Vector rotate(double theta)
 	{
 		return new Vector(
 				x*Math.cos(theta) - y*Math.sin(theta),
 				y*Math.cos(theta) + x*Math.sin(theta));
+	}
+	
+	
+	/**
+	 * Finds the value t, such that CD*t + C lies on the line AB*s + A.
+	 * 
+	 * i.e. solves for t in the equation:
+	 * 
+	 * AB x (CD*t + C) = 0 
+	 * @param a
+	 * @param b
+	 * @param la C
+	 * @param lb D
+	 * @return t
+	 */
+	public static double lineSegIntersectLine(Vector a, Vector b, Vector la, Vector lb)
+	{	
+		Vector ab = b.sub(a);
+		double t = -(ab.cross(a.sub(la)))/ab.cross(lb.sub(la));
+		return t;
+	}
+	
+	/**
+	 * Finds the value t, such that CD*t + C lies on the line AB*s + A.
+	 * 
+	 * i.e. solves for t in the equation:
+	 * 
+	 * AB x (CD*t + C) = 0 
+	 * @param a
+	 * @param b
+	 * @param ab
+	 * @param la C
+	 * @param lb D
+	 * @return t
+	 */
+	public static double lineSegIntersectLine(Vector a, Vector b, Vector ab, Vector la, Vector lb)
+	{
+		double t = -(ab.cross(a.sub(la)))/ab.cross(lb.sub(la));
+		return t;
 	}
 }
