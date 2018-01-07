@@ -24,7 +24,7 @@ import game.Shoot;
 public class Map
 {
 	public TreeSet<Triangle> geo = new TreeSet<Triangle>();
-	public BSPNode head = null;
+	private BSPNode head = null;
 	public Dijkstra.Description desc = new Dijkstra.Description();
 	
 	public static class Line
@@ -394,6 +394,28 @@ public class Map
 		}
 		
 		return true;
+	}
+	
+	public ArrayList<Line> getAllLines()
+	{
+		ArrayList<Line> ret = new ArrayList<Line>();
+		ArrayList<BSPNode> check = new ArrayList<BSPNode>();
+		
+		check.add(head);
+		
+		while(!ret.isEmpty())
+		{
+			BSPNode cur = check.remove(0);
+			ret.add(cur.data);
+			
+			if(cur.left != null)
+				check.add(cur.left);
+			if(cur.right != null)
+				check.add(cur.right);
+		}
+		
+		return ret;
+		
 	}
 	
 	private class MapDialog implements ActionListener

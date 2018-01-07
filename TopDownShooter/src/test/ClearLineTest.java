@@ -16,6 +16,7 @@ import geo.Triangle;
 import geo.Vector;
 import geo.Map;
 import geo.Map.BSPNode;
+import geo.Map.Line;
 
 public class ClearLineTest extends JPanel implements MouseListener
 {
@@ -90,23 +91,14 @@ public class ClearLineTest extends JPanel implements MouseListener
 	
 	public void labelLineSeg(Graphics g)
 	{
-		ArrayList<BSPNode> draw = new ArrayList<BSPNode>();
+		ArrayList<Line> draw = mw.gameMap.getAllLines();
 		
-		draw.add(mw.gameMap.head);
-		g.setColor(Color.ORANGE);
-		while(!draw.isEmpty())
+		for(Line l : draw)
 		{
-			BSPNode cur = draw.remove(0);
-			
-			if(cur == null)
-				continue;
-			
-			draw.add(cur.left);
-			draw.add(cur.right);
-			Vector pos = translateToScreen(cur.data.a.add(cur.data.ab.scale(0.5)));
-			Vector a = translateToScreen(cur.data.a);
-			Vector b = translateToScreen(cur.data.b);
-			g.drawString("id:" + cur.data.getId(), (int)pos.x, (int)pos.y);
+			Vector pos = translateToScreen(l.a.add(l.ab.scale(0.5)));
+			Vector a = translateToScreen(l.a);
+			Vector b = translateToScreen(l.b);
+			g.drawString("id:" + l.getId(), (int)pos.x, (int)pos.y);
 			g.drawRect((int) a.x -1, (int) a.y - 1, 2, 2);
 			g.drawRect((int) b.x -1, (int) b.y - 1, 2, 2);
 		}
