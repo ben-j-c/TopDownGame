@@ -24,15 +24,15 @@ import game.Shoot;
 public class Map
 {
 	public TreeSet<Triangle> geo = new TreeSet<Triangle>();
-	private BSPNode head = null;
+	public BSPNode head = null;
 	public Dijkstra.Description desc = new Dijkstra.Description();
 	
 	public static class Line
 	{
 		private int id;
 		private static int count = 0;
-		Vector a, b;
-		Vector ab;
+		public Vector a, b;
+		public Vector ab;
 		
 		Line(Vector a, Vector b)
 		{
@@ -59,14 +59,19 @@ public class Map
 			
 			return false;
 		}
+		
+		public int getId()
+		{
+			return id;
+		}
 	}
 	
 	public static class BSPNode
 	{
-		Line data;
+		public Line data;
 		
-		BSPNode left = null;
-		BSPNode right = null;
+		public BSPNode left = null;
+		public BSPNode right = null;
 		
 		BSPNode(Line l)
 		{
@@ -274,6 +279,7 @@ public class Map
 	private void loadGeoBSP(File geoFile) throws Exception
 	{
 		geo.clear();
+		head = null;
 		
 		Scanner s = new Scanner(geoFile);
 		s.useDelimiter("[^-?\\d\\.?\\d*]+");
@@ -362,6 +368,7 @@ public class Map
 		while(!check.isEmpty())
 		{
 			BSPNode cur = check.remove(0);
+			//System.out.println(cur);
 			double crossA = cur.data.ab.cross(a.sub(cur.data.a));
 			double crossB = cur.data.ab.cross(b.sub(cur.data.a));
 			
@@ -370,18 +377,19 @@ public class Map
 				if(cur.left != null)
 					check.add(cur.left);
 			}
-			else if(crossA < 0 || crossB < 0)
+			if(crossA < 0 || crossB < 0)
 			{
 				if(cur.right != null)
 					check.add(cur.right);
 			}
 			
-			Vector ab = b.sub(a);
+			Vector ab = cur.data.b.sub(cur.data.a);
 			double t = Vector.lineSegIntersectLine(cur.data.a, cur.data.b, ab, a, b);
+			//System.out.println(t);
 			
 			//Check to see if this edge intersects the given line
-			if(t > 0 && t < 0
-					&& ab.scale(t).add(a).isLineBounded(cur.data.a, cur.data.b, Triangle.DEFAULT_ERROR))
+			if(t > 0 && t < 1
+					&& b.sub(a).scale(t).add(a).isLineBounded(cur.data.a, cur.data.b, Triangle.DEFAULT_ERROR))
 				return false;
 		}
 		
@@ -499,6 +507,11 @@ public class Map
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
+			}
+			
+			synchronized(Map.class)
+			{
+				Map.class.notifyAll();
 			}
 		}
 	}
