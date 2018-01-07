@@ -344,4 +344,10 @@ public class Vector implements Comparable<Vector>
 		
 		return t > 0 && t < 1;
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Double.hashCode(x + y); 
+	}
 }
