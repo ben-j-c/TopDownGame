@@ -157,8 +157,6 @@ public class Display  extends JFrame implements GLEventListener
 			gl.glVertex3d(t.a.x, t.a.y, SLAB_HEIGHT);
 			gl.glVertex3d(t.b.x, t.b.y, SLAB_HEIGHT);
 			gl.glVertex3d(t.c.x, t.c.y, SLAB_HEIGHT);
-			
-			
 		}
 
 		gl.glEnd();

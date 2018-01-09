@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import game.Shoot;
+import geo.Triangle.BlockingVector;
 
 public class Map
 {
@@ -199,6 +200,35 @@ public class Map
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void addTriangle(Triangle t)
+	{
+		geo.add(t);
+		head = null;
+	}
+	
+	/**
+	 * find the closest point to pos in geo 
+	 * @param pos
+	 * @param skew
+	 * @return the first found corner that sits within skew of pos, if none are found, returns pos
+	 */
+	public Vector snapToGeo(Vector pos, double skew)
+	{
+		for(Triangle t: geo)
+		{
+			Vector test = t.skew(pos, skew);
+			if(test != null)
+				return test;
+		}
+		
+		return pos;
+	}
+	
+	public TreeSet<Triangle> getTriangles()
+	{
+		return geo;
 	}
 	
 	/**
@@ -416,6 +446,84 @@ public class Map
 		
 		return ret;
 		
+	}
+	
+	public Vector findClosestPos(Vector r, Vector dr)
+	{ 
+		Vector nl = r.add(dr);
+		BlockingVector block = getClosest(head, r, dr);;
+		if(block.block == null)
+			return nl;
+		
+		do
+		{
+			nl = r.add(nl.sub(r).projectOnto(block.block));
+			block = getClosest(head, r, nl.sub(r));
+		}while(block.block != null);
+		
+		return nl;
+	}
+	
+	private BlockingVector getClosest(BSPNode root,Vector r, Vector dr)
+	{
+		Line cur = root.data;
+		Vector s = r.add(dr);
+		double crossA = cur.ab.cross(r.sub(cur.a)); //indicates which side the initial point is on
+		double crossB = cur.ab.cross(s.sub(cur.a)); //indicates which side the initial point is on
+		
+		BlockingVector ret = new BlockingVector();
+		
+		//traverse inorder dependent on which side the initial point is
+		if(crossA > 0)
+		{
+			if(root.left != null)//if left is the potentially closer
+				ret = getClosest(root.left, r, dr);
+			
+			//if left did not result in a successful intersection and the destination is on the right
+			if(ret.block == null && crossB < 0)
+			{
+				double tSelf = Vector.lineSegIntersectLine(cur.a, cur.b, r, s);
+				
+				//Check to see if this line intersects the path else check the other side
+				if(r.add(dr.scale(tSelf)).isLineBounded(cur.a, cur.b, Triangle.DEFAULT_ERROR))
+					ret = new BlockingVector(cur.ab.copy(), tSelf);
+				else if(root.right != null)
+					ret = getClosest(root.right, r, dr);
+			}
+		}
+		else
+		{
+			if(root.right != null)//if right is the potentially closer
+				ret = getClosest(root.right, r, dr);
+			
+			//if right did not result in a successful intersection and the destination is on the other side
+			if(ret.block == null && crossB > 0 )
+			{
+				double tSelf = Vector.lineSegIntersectLine(cur.a, cur.b, r, s);
+				
+				//Check to see if this line intersects the path else check the other side
+				if(r.add(dr.scale(tSelf)).isLineBounded(cur.a, cur.b, Triangle.DEFAULT_ERROR))
+					ret = new BlockingVector(cur.ab.copy(), tSelf);
+				else if(root.left != null)
+					ret = getClosest(root.left, r, dr);
+			}
+		}
+		return ret;
+	}
+	
+	public boolean isBSPCalculated()
+	{
+		return head != null;
+	}
+	
+	public void calculateBSP()
+	{
+		for(Triangle t: geo)
+		{
+			this.head = BSPNode.add(head, new Line(t.a, t.b));
+			this.head = BSPNode.add(head, new Line(t.b, t.c));
+			this.head = BSPNode.add(head, new Line(t.c, t.a));
+		}
 	}
 	
 	private class MapDialog implements ActionListener

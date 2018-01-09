@@ -21,7 +21,16 @@ public class Triangle implements Comparable<Triangle>
 		public Vector block = null;
 		public double t = LARGE_VALUE;
 		
+		public BlockingVector()
+		{
+			
+		}
 		
+		public BlockingVector(Vector v, double w)
+		{
+			block = v.copy();
+			t = w;
+		}
 	}
 	public Vector a;
 	public Vector b;

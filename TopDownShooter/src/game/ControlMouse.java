@@ -100,16 +100,7 @@ public class ControlMouse implements MouseListener
 			else //placing triangles
 			{
 				Vector temp = inst.translateToReal(e.getX(), e.getY());
-				
-				for(Triangle t: mw.gameMap.geo)
-				{
-					Vector temp1 = t.skew(temp, Shoot.SNAP_DISTANCE);
-					if(temp1 != null)
-					{
-						temp = temp1;
-						break;
-					}
-				}
+				temp = mw.gameMap.snapToGeo(temp, Shoot.SNAP_DISTANCE);
 				
 				points.add(temp);
 				
@@ -119,7 +110,8 @@ public class ControlMouse implements MouseListener
 					Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
 					if(!t.isFlat())
 					{
-						mw.gameMap.geo.add(t);
+						//mw.gameMap.geo.add(t);
+						mw.gameMap.addTriangle(t);
 					}
 				}
 			}// else placing triangle 

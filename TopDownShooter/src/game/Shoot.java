@@ -270,7 +270,7 @@ public class Shoot
 	 */
 	private void stepPlayerPos()
 	{
-		player.pos.set(Triangle.findClosestPos(player.pos, player.v, mw.gameMap.geo));
+		player.pos.set(mw.gameMap.findClosestPos(player.pos, player.v));
 	}
 	/**
 	 * set the graph with the player to a new graph
@@ -473,6 +473,8 @@ public class Shoot
 		player = new Player();
 		offset = new Vector(0,0);
 		inv.setDefaultLoadout();
+		if(!mw.gameMap.isBSPCalculated())
+			mw.gameMap.calculateBSP();
 		
 		do 
 		{

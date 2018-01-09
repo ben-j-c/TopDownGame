@@ -231,7 +231,8 @@ public class Entity implements Comparable<Entity>
 			this.v.set(nv.clamp(Shoot.PLAYER_SPEED*getSpeed()*1.5));
 		}
 		//Try to place the entity at a location closest to pos+v without intersecting geometry
-		this.newPos.set(Triangle.findClosestPos(this.pos, this.v, inst.mw.gameMap.geo));
+		//this.newPos.set(Triangle.findClosestPos(this.pos, this.v, inst.mw.gameMap.geo));
+		this.newPos.set(inst.mw.gameMap.findClosestPos(this.pos, this.v));
 	}
 	
 	public double getSize()
