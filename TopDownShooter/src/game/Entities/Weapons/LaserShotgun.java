@@ -37,7 +37,7 @@ public class LaserShotgun extends Pickup implements Weapon
 			
 			for(int i = 0 ; i < ROUNDS ; i++)
 			{
-				double theta = (inst.r.nextGaussian() - 0.5)*ACCURACY;
+				double theta = inst.r.nextGaussian()*ACCURACY;
 				Vector randomBearing = bearing.rotate(theta);
 				
 				double t = inst.calcIntersect(pos, randomBearing.add(pos)).t; // find the closest intersection of pos -> randomBearing

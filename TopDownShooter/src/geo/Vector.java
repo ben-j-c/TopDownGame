@@ -292,11 +292,22 @@ public class Vector implements Comparable<Vector>
 		
 		return this.copy();
 	}
-	public  Vector rotate(double theta)
+	public Vector rotate(double theta)
 	{
 		return new Vector(
 				x*Math.cos(theta) - y*Math.sin(theta),
 				y*Math.cos(theta) + x*Math.sin(theta));
+	}
+	
+	public Vector rotateset(double theta)
+	{
+		double nx = x*Math.cos(theta) - y*Math.sin(theta);
+		double ny = y*Math.cos(theta) + x*Math.sin(theta);
+		
+		x = nx;
+		y = ny;
+		
+		return this;
 	}
 	
 	

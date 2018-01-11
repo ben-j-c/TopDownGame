@@ -52,7 +52,7 @@ public class Flamethrower extends Pickup implements Weapon
 			double vx = v.x; double vy = v.y;
 			v.x = Math.cos(theta)*vx - Math.sin(theta)*vy;
 			v.y = Math.sin(theta)*vx + Math.cos(theta)*vy;
-			v.scaleset(M_VELOCITY + V_VAR*(inst.r.nextGaussian() - 0.5));
+			v.scaleset(M_VELOCITY + V_VAR*inst.r.nextGaussian());
 			v.addset(inst.getPlayerV());
 			
 			Flame round = new Flame(pos, v, (int) (Shoot.r.nextInt((int) (FRAMES*0.9)) + FRAMES*0.1) , DAMAGE);

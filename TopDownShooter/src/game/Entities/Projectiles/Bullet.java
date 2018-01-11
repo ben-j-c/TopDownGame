@@ -4,6 +4,7 @@ import com.jogamp.opengl.GL2;
 
 import game.Entity;
 import game.Shoot;
+import game.Entities.Monster;
 import game.Entities.Projectile;
 import geo.Triangle;
 import geo.Vector;
@@ -33,18 +34,18 @@ public class Bullet  extends Projectile
 		
 		Entity e = inst.getAdjacentEnt(pos);
 		
-		if(t > 1 && frames > 0 && e == null)
+		if(t < 1 && t > 0 || frames <= 0)
+		{	
+			inst.entityWrapper.autoRemove(this);
+		}
+		else if(e != null && e instanceof Monster)
 		{
-			pos.addset(v);
+			e.applyDamage(damage);
+			inst.entityWrapper.autoRemove(this);
 		}
 		else
 		{
-			if(e != null)
-			{
-				e.applyDamage(damage);
-			}
-			
-			inst.entityWrapper.autoRemove(this);
+			pos.addset(v);
 		}
 		
 		frames--;

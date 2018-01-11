@@ -16,6 +16,7 @@ public class Rifle extends Pickup implements Weapon
 	public static final double M_VELOCITY = Shoot.PLAYER_SPEED*5;
 	public static final int FRAMES = 100;
 	public static final double DAMAGE = 50;
+	public static final double ACCURACY = Math.PI/100;//radians
 	
 	
 	
@@ -47,11 +48,9 @@ public class Rifle extends Pickup implements Weapon
 			Vector aim = inst.translateToReal(x, y);
 			Vector pos = inst.getPlayerPos();
 			Vector v = aim.sub(pos).unitize();
-			double theta = (inst.r.nextDouble()*1 - 0.5)*Math.PI/180;
+			double theta = inst.r.nextGaussian()*ACCURACY;
 			
-			double vx = v.x; double vy = v.y;
-			v.x = Math.cos(theta)*vx - Math.sin(theta)*vy;
-			v.y = Math.sin(theta)*vx + Math.cos(theta)*vy;
+			v.rotate(theta);
 			v.scaleset(M_VELOCITY);
 			
 			Bullet round = new Bullet(pos, v, FRAMES, DAMAGE);
