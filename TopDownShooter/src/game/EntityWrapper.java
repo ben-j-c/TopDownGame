@@ -1,8 +1,10 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
+import game.Entities.Body;
 import game.Entities.Dynamic;
 import game.Entities.Monster;
 import game.Entities.Pathable;
@@ -15,11 +17,15 @@ public class EntityWrapper
 	public HashSet<Projectile> projectiles = new HashSet<Projectile>(Shoot.MAX_MONST);
 	public HashSet<Dynamic> dynamics = new HashSet<Dynamic>(Shoot.MAX_MONST);
 	public HashSet<Pathable> pathEnts = new HashSet<Pathable>(Shoot.MAX_MONST);
+	public HashSet<Body> bodyEnts = new HashSet<Body>(Shoot.MAX_MONST); 
 	
 	public ArrayList<Entity> toRemove = new ArrayList<Entity>();
 	public ArrayList<Projectile> projToRemove = new ArrayList<Projectile>();
 	public ArrayList<Dynamic> dynamicToRemove = new ArrayList<Dynamic>();
 	public ArrayList<Pathable> pathEntsToRemove = new ArrayList<Pathable>();
+	public ArrayList<Body> bodyEntsToRemove = new ArrayList<Body>(); 
+	
+	public HashMap<Integer, HashMap<Integer,  ArrayList<Entity>>> grid = new HashMap<Integer, HashMap<Integer,  ArrayList<Entity>>>(Shoot.MAX_MONST);
 	
 	public void addProjectile(Projectile proj)
 	{
@@ -44,6 +50,8 @@ public class EntityWrapper
 			dynamics.add((Dynamic) e);
 		if(e instanceof Pathable)
 			pathEnts.add((Pathable) e);
+		if(e instanceof Body)
+			bodyEnts.add((Body) e);
 		
 		ents.add(e);
 		
@@ -80,6 +88,10 @@ public class EntityWrapper
 		{
 			pathEntsToRemove.add((Pathable) e);
 		}
+		if(e instanceof Body)
+		{
+			bodyEntsToRemove.add((Body) e);
+		}
 		
 		toRemove.add(e);
 	}
@@ -90,11 +102,13 @@ public class EntityWrapper
 		projectiles.removeAll(projToRemove);
 		dynamics.removeAll(dynamicToRemove);
 		pathEnts.removeAll(pathEntsToRemove);
+		bodyEnts.removeAll(bodyEntsToRemove);
 		
 		toRemove.clear();
 		projToRemove.clear();
 		dynamicToRemove.clear();
 		pathEntsToRemove.clear();
+		bodyEntsToRemove.clear();
 	}
 	
 	public void clear()

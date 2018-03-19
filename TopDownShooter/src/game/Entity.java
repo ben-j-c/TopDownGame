@@ -8,6 +8,7 @@ import game.Entities.Body;
 import game.Entities.Monster;
 import game.Entities.Pathable;
 import game.Entities.Monsters.GMonster;
+import game.multithread.MT_EntMovement;
 import geo.AStar;
 import geo.Dijkstra;
 import geo.Triangle;
@@ -41,6 +42,7 @@ public class Entity implements Comparable<Entity>
 	public double life = 100;
 	
 	public double r, g, b;
+	public int xLow, xHigh, yLow, yHigh;
 	
 	int TYPE;
 	
@@ -208,21 +210,40 @@ public class Entity implements Comparable<Entity>
 		Vector nv = new Vector(this.v);
 		
 		if(this instanceof Body)
-		{
-			for(Entity f : inst.entityWrapper.ents)
+		{	
+			
+			for( int x = xLow ; x <= xHigh ; x++)
 			{
-				double skew = this.pos.skew(f.pos);
-				if(f instanceof Body && f != this && skew < 2.5*getSize())
+				for( int y = yLow ; y <= yHigh ; y++)
 				{
-					if(skew < getSize())
-					{
-						((Body) this).contact((Body) f);
-						((Body) f).contact((Body) this);
+					ArrayList<Entity> block = null;
+					try {
+						block = inst.entityWrapper.grid.get(x).get(y);}
+					catch (NullPointerException e) {
+						synchronized(inst.entityWrapper.grid)
+						{
+							System.out.println(inst.entityWrapper.grid);
+							System.out.printf("%d : (%d, %d) -> (%d, %d)\n", id, xLow, yLow, xHigh, yHigh);
+							System.out.printf("%d : %d, %d\n", id, x, y);
+							System.exit(3);
+						}
 					}
-					Vector dir = this.pos.sub(f.pos).unitize();
-					nv.addset(
-							(dir.scale((Shoot.MONST_SIZE*getSize()/(skew*skew))))
-							.scale(Shoot.PLAYER_SPEED*getSpeed()));
+					for( Entity f : block)
+					{
+						double skew = this.pos.skew(f.pos);
+						if(f != this && skew < 2.5*getSize())
+						{
+							if(skew < getSize())
+							{
+								((Body) this).contact((Body) f);
+								((Body) f).contact((Body) this);
+							}
+							Vector dir = this.pos.sub(f.pos).unitize();
+							nv.addset(
+									(dir.scale((Shoot.MONST_SIZE*getSize()/(skew*skew))))
+									.scale(Shoot.PLAYER_SPEED*getSpeed()));
+						}
+					}
 				}
 			}
 			
