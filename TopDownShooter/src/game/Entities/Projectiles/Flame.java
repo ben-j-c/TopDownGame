@@ -48,7 +48,10 @@ public class Flame extends Projectile
 		
 		if(bv.t <= 1)
 		{
-			v.set(v.projectOnto(bv.block));
+			v.set(
+					v.sub(v.projectOnto(bv.block)).scale(-1)
+					.add(v.projectOnto(bv.block))
+					.scale(0.25));
 		}
 		else
 		{

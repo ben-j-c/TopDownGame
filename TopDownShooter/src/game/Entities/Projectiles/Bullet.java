@@ -8,12 +8,14 @@ import game.Entities.Monster;
 import game.Entities.Projectile;
 import geo.Triangle;
 import geo.Vector;
+import geo.Triangle.BlockingVector;
 
 public class Bullet  extends Projectile
 {
 	private int frames = 0;
 	private double damage = 0;
 	private double size = Shoot.MONST_SIZE;
+	private double ricochet_prob = 0.25;
 	
 	public Bullet(Vector pos, Vector v, int frames, double damage)
 	{
@@ -30,17 +32,30 @@ public class Bullet  extends Projectile
 		
 		Vector nl = pos.add(v);
 		
+		BlockingVector bv = inst.calcIntersect(pos, nl); 
+		
 		double t = inst.calcIntersect(pos, nl).t; 
 		
 		Entity e = inst.getAdjacentEnt(pos);
 		
-		if(t < 1 && t > 0 || frames <= 0)
+		if(frames <= 0)
 		{	
 			inst.entityWrapper.autoRemove(this);
+		}
+		else if(t < 1 && t > 0 && inst.r.nextDouble() < ricochet_prob)
+		{
+			v.set(
+					v.sub(v.projectOnto(bv.block)).scale(-1)
+					.add(v.projectOnto(bv.block))
+					.scale(0.25));
 		}
 		else if(e != null && e instanceof Monster)
 		{
 			e.applyDamage(damage);
+			inst.entityWrapper.autoRemove(this);
+		}
+		else if(t < 1 && t > 0 )
+		{
 			inst.entityWrapper.autoRemove(this);
 		}
 		else

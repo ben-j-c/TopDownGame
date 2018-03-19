@@ -102,6 +102,10 @@ public class Entity implements Comparable<Entity>
 		Display.drawCube(gl, getSize(), pos.x, pos.y, 0.01);
 	}
 	
+	/**
+	 * Looks for the next node to move to to get to the player
+	 * @return The next node that gets this entity closest to the player
+	 */
 	public Vector getPrecalcMove()
 	{
 		Shoot inst = Shoot.getInstance();
@@ -111,18 +115,18 @@ public class Entity implements Comparable<Entity>
 		
 		boolean canSee = inst.mw.gameMap.clearLine(this.pos,  pos);//Triangle.clearline(this.pos, pos, inst.mw.gameMap.geo);
 		
-		if(canSee)
+		if(canSee)//if you can see the player, no traversal needed
 		{
 			return pos.copy();
 		}
-		else if(lastHeadTo == null || ((inst.getGameTime() + id) & 0b111) == 0 )
+		else if(lastHeadTo == null || ((inst.getGameTime() + id) & 0b1111) == 0 )//every 16 ticks or if you havn't pathed
 		{
 			
 			Vector next = this.pos;
 			double cost = Triangle.LARGE_VALUE;
 			for(Vector v: inst.mw.gameMap.desc.getNodes())
 			{
-				if( inst.mw.gameMap.clearLine(this.pos, v))//Triangle.clearline(this.pos, v, inst.mw.gameMap.geo))
+				if( inst.mw.gameMap.clearLine(this.pos, v))
 				{
 					double newCost = this.pos.sub(v).mag() + inst.mw.descWithPlayer.getCost(v, pos);
 					if(newCost < cost)
