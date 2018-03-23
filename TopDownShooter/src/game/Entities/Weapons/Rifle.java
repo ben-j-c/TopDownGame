@@ -1,7 +1,7 @@
 package game.Entities.Weapons;
 
 import geo.Vector;
-
+import game.Renderable;
 import game.Shoot;
 import game.Entities.InventoryItem;
 import game.Entities.Pickup;
@@ -9,7 +9,7 @@ import game.Entities.Projectile;
 import game.Entities.Weapon;
 import game.Entities.Projectiles.Bullet;
 
-public class Rifle extends Pickup implements Weapon
+public class Rifle extends Pickup implements Weapon, Renderable
 {
 	int ammo = 100;
 	int offset = 0;

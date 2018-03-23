@@ -1,8 +1,8 @@
 package game.Entities.Projectiles;
 
 import com.jogamp.opengl.GL2;
-
 import game.Entity;
+import game.Renderable;
 import game.Shoot;
 import game.Entities.Monster;
 import game.Entities.Projectile;
@@ -10,12 +10,14 @@ import geo.Triangle;
 import geo.Vector;
 import geo.Triangle.BlockingVector;
 
-public class Bullet  extends Projectile
+public class Bullet  extends Projectile implements Renderable
 {
 	private int frames = 0;
 	private double damage = 0;
 	private double size = Shoot.MONST_SIZE;
-	private double ricochet_prob = 0.25;
+	private double ricochet_prob = 0.5;
+	private double ricochet_stddev_angle = 7.5/180.0*Math.PI;;
+	private double ricochet_stddev_velocity = 0.25;
 	
 	public Bullet(Vector pos, Vector v, int frames, double damage)
 	{
@@ -34,7 +36,9 @@ public class Bullet  extends Projectile
 		
 		BlockingVector bv = inst.calcIntersect(pos, nl); 
 		
-		double t = inst.calcIntersect(pos, nl).t; 
+		double t = bv.t; 
+		
+		double cos;
 		
 		Entity e = inst.getAdjacentEnt(pos);
 		
@@ -42,12 +46,14 @@ public class Bullet  extends Projectile
 		{	
 			inst.entityWrapper.autoRemove(this);
 		}
-		else if(t < 1 && t > 0 && inst.r.nextDouble() < ricochet_prob)
+		else if(t < 1 && t > 0 && inst.r.nextDouble() < ricochet_prob*(cos =  Math.abs(bv.block.cos(v))))
 		{
+			double theta = inst.r.nextGaussian()*ricochet_stddev_angle*(1 -cos);
 			v.set(
 					v.sub(v.projectOnto(bv.block)).scale(-1)
 					.add(v.projectOnto(bv.block))
-					.scale(0.25));
+					.scale(Math.min(1, cos + inst.r.nextGaussian()*ricochet_stddev_velocity))
+					.rotate(theta));
 		}
 		else if(e != null && e instanceof Monster)
 		{

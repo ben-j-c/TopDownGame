@@ -1,6 +1,7 @@
 package game.Entities.Weapons;
 
 import game.Entity;
+import game.Renderable;
 import game.Shoot;
 import game.Entities.Monster;
 import game.Entities.Pickup;
@@ -11,7 +12,7 @@ import game.Entities.Projectiles.Laser;
 import geo.Triangle;
 import geo.Vector;
 
-public class LaserRifle extends Pickup implements Weapon
+public class LaserRifle extends Pickup implements Weapon, Renderable
 {
 	int ammo = 100;
 	public static final int FRAMES = 8;

@@ -1,5 +1,6 @@
 package game.Entities.Weapons;
 
+import game.Renderable;
 import game.Shoot;
 import game.Entities.Pickup;
 import game.Entities.Projectile;
@@ -8,7 +9,7 @@ import game.Entities.Projectiles.Bullet;
 import game.Entities.Projectiles.Flame;
 import geo.Vector;
 
-public class Flamethrower extends Pickup implements Weapon
+public class Flamethrower extends Pickup implements Weapon, Renderable
 {
 	int ammo = 10000;
 	int offset = 0;

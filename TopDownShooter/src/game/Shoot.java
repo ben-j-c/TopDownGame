@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 
@@ -36,16 +38,16 @@ import game.multithread.MT_Generic;
  * @author Ben
  * The game class includes all the rendering mouse handling
  */
-public class Shoot
+public class Shoot implements Runnable
 {
 	//Constants
 	public static boolean DEBUG = true;
 	public static final double SNAP_DISTANCE = 0.025;
-	public static final double PLAYER_SPEED = 0.009;
+	public static final double PLAYER_SPEED = 0.003;
 	public static final int INVENTORY_SIZE = 5;
 	public static final double PARTICLE_SPEED = 0.02;
-	public static final int MAX_MONST = 4000;
-	public static final double MONST_SPEED = 0.8;
+	public static final int MAX_MONST = 0;
+	public static final double MONST_SPEED = 0.5;
 	public static final double MONST_SIZE = 0.005;
 	public static final double SPAWN_PROB = 1;
 	public static final double SPAWN_DIST = 1.5;
@@ -62,6 +64,7 @@ public class Shoot
 	public static final Random r = new Random();
 	private static Shoot inst; 
 	private final ExecutorService es = Executors.newFixedThreadPool(THREAD_COUNT);
+	private final ScheduledExecutorService gameThread = Executors.newSingleThreadScheduledExecutor();
 	private FPSAnimator animator;
 	protected GLCanvas canvas;
 	private Display disp;
@@ -150,6 +153,7 @@ public class Shoot
 	public void startGame()
 	{
 		animator.start();
+		gameThread.scheduleAtFixedRate(this, 1, 20, TimeUnit.MILLISECONDS);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,7 +194,7 @@ public class Shoot
 	private void stepPlayer()
 	{
 		java.awt.Point p = canvas.getMousePosition(); 
-	
+		
 		cycleData = entityWrapper.ents.toArray(new Entity[0]);
 		
 		if(p != null)
@@ -383,17 +387,25 @@ public class Shoot
 			if(DEBUG && gameTime%25 == 0)
 			{
 				System.out.printf("SP:%d SPP:%d SPG:%d CD:%d RE:%d SM:%d MM:%d = %d\n",
-					a[1] - a[0],
-					a[2] - a[1],
-					a[3] - a[2],
-					a[4] - a[3],
-					a[5] - a[4],
-					a[6] - a[5],
-					a[7] - a[6],
-					a[7] - a[0]);
+						a[1] - a[0],
+						a[2] - a[1],
+						a[3] - a[2],
+						a[4] - a[3],
+						a[5] - a[4],
+						a[6] - a[5],
+						a[7] - a[6],
+						a[7] - a[0]);
 				
 				System.out.printf("ec:%d pa:%d dy:%d pr:%d\n", entityWrapper.ents.size(), entityWrapper.pathEnts.size(), entityWrapper.dynamics.size() , entityWrapper.projectiles.size());
 			}
+		}
+	}
+	
+	public void run() 
+	{
+		synchronized(this)
+		{
+			stepGame();
 		}
 	}
 	

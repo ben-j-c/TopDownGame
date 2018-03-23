@@ -4,11 +4,12 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 
 import game.Entity;
+import game.Renderable;
 import game.Shoot;
 import game.Entities.Projectile;
 import geo.Vector;
 
-public class Laser  extends Projectile
+public class Laser  extends Projectile implements Renderable
 {
 	int frames;
 	

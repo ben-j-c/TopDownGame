@@ -5,12 +5,13 @@ import java.util.ArrayList;
 import com.jogamp.opengl.GL2;
 
 import game.Entity;
+import game.Renderable;
 import game.Shoot;
 import game.Entities.Projectile;
 import geo.Triangle.BlockingVector;
 import geo.Vector;
 
-public class Flame extends Projectile
+public class Flame extends Projectile implements Renderable
 {
 	int frames;
 	Vector pos, v;

@@ -5,12 +5,13 @@ import game.Entities.Projectiles.Bullet;
 import game.Entities.Projectiles.Laser;
 import geo.Vector;
 import game.Entity;
+import game.Renderable;
 import game.Shoot;
 import game.Entities.Monster;
 import game.Entities.Pickup;
 import game.Entities.Projectile;
 
-public class Shotgun extends Pickup implements Weapon
+public class Shotgun extends Pickup implements Weapon, Renderable
 {
 	int ammo = 100;
 	public static final int ROUNDS = 16;

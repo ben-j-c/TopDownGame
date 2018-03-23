@@ -41,108 +41,110 @@ public class ControlMouse implements MouseListener
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		if(!inst.GAME_STARTED)
+		synchronized(inst)
 		{
-			if(inst.PLACE_GRAPH) //placing nodes
+			if(!inst.GAME_STARTED)
 			{
-				Vector temp = inst.translateToReal(e.getX(), e.getY());
-				if(e.getButton() == MouseEvent.BUTTON1)
+				if(inst.PLACE_GRAPH) //placing nodes
 				{
-					Vector snapVector = mw.gameMap.desc.getSkewed(temp, Shoot.SNAP_DISTANCE*Shoot.SNAP_DISTANCE);
-					geo.Dijkstra.Edge snapEdge = mw.gameMap.desc.getSkewedEdge(temp, Shoot.SNAP_DISTANCE);
-					
-					System.out.println(snapVector);
-					System.out.println(snapEdge);
-					
-					if(snapVector != null)
-						System.out.println(mw.gameMap.desc.getNodes().contains(snapVector));
-					if(snapEdge != null)
-						System.out.println(mw.gameMap.desc.getEdges().contains(snapEdge));
-					
-					if(e.isAltDown())
+					Vector temp = inst.translateToReal(e.getX(), e.getY());
+					if(e.getButton() == MouseEvent.BUTTON1)
 					{
-						if(snapVector != null)
-						{
-							mw.gameMap.desc.removeNode(snapVector);
-						}
-						else if(snapEdge != null)
-						{
-							mw.gameMap.desc.removeEdge(snapEdge);
-						}
+						Vector snapVector = mw.gameMap.desc.getSkewed(temp, Shoot.SNAP_DISTANCE*Shoot.SNAP_DISTANCE);
+						geo.Dijkstra.Edge snapEdge = mw.gameMap.desc.getSkewedEdge(temp, Shoot.SNAP_DISTANCE);
 						
-						points.clear();
-					}
-					else
-					{
-						if(snapVector == null)
+						System.out.println(snapVector);
+						System.out.println(snapEdge);
+						
+						if(snapVector != null)
+							System.out.println(mw.gameMap.desc.getNodes().contains(snapVector));
+						if(snapEdge != null)
+							System.out.println(mw.gameMap.desc.getEdges().contains(snapEdge));
+						
+						if(e.isAltDown())
 						{
-							points.add(temp);
-							mw.gameMap.desc.addNode(temp);
+							if(snapVector != null)
+							{
+								mw.gameMap.desc.removeNode(snapVector);
+							}
+							else if(snapEdge != null)
+							{
+								mw.gameMap.desc.removeEdge(snapEdge);
+							}
+							
+							points.clear();
 						}
 						else
 						{
-							points.add(snapVector);
-							mw.gameMap.desc.addNode(snapVector);
-						}
-						
-						if(points.size() == 2)
-						{
-							mw.gameMap.desc.addEdge(points.remove(0), points.remove(0));
-							points.clear();
+							if(snapVector == null)
+							{
+								points.add(temp);
+								mw.gameMap.desc.addNode(temp);
+							}
+							else
+							{
+								points.add(snapVector);
+								mw.gameMap.desc.addNode(snapVector);
+							}
+							
+							if(points.size() == 2)
+							{
+								mw.gameMap.desc.addEdge(points.remove(0), points.remove(0));
+								points.clear();
+							}
 						}
 					}
-				}
-				else if(e.getButton() == MouseEvent.BUTTON2)
-				{
-					
-				}
-			}// inst.PLACE_GRAPH
-			else //placing triangles
-			{
-				Vector temp = inst.translateToReal(e.getX(), e.getY());
-				temp = mw.gameMap.snapToGeo(temp, Shoot.SNAP_DISTANCE);
-				
-				points.add(temp);
-				
-				if(points.size()%3 == 0)
-				{
-					int size = points.size();
-					Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
-					if(!t.isFlat())
+					else if(e.getButton() == MouseEvent.BUTTON2)
 					{
-						//mw.gameMap.geo.add(t);
-						mw.gameMap.addTriangle(t);
+						
 					}
-				}
-			}// else placing triangle 
-		} //!inst.GAME_STARTED
-		else
-		{
-			switch(e.getButton())
+				}// inst.PLACE_GRAPH
+				else //placing triangles
+				{
+					Vector temp = inst.translateToReal(e.getX(), e.getY());
+					temp = mw.gameMap.snapToGeo(temp, Shoot.SNAP_DISTANCE);
+					
+					points.add(temp);
+					
+					if(points.size()%3 == 0)
+					{
+						int size = points.size();
+						Triangle t = new Triangle(points.get( size - 3 ), points.get( size - 2 ), points.get( size - 1 ) );
+						if(!t.isFlat())
+						{
+							//mw.gameMap.geo.add(t);
+							mw.gameMap.addTriangle(t);
+						}
+					}
+				}// else placing triangle 
+			} //!inst.GAME_STARTED
+			else
 			{
-				case MouseEvent.BUTTON1:
+				switch(e.getButton())
 				{
-					inst.fireWeapon(e.getX(), e.getY());
-					keys.MOUSE_LEFT = true;
-					break;
-				}
-				case MouseEvent.BUTTON2:
-				{
-					inst.altFireWeapon(e.getX(), e.getY());
-					keys.MOUSE_RIGHT = true;
-					keys.MOUSE_X = e.getX();
-					keys.MOUSE_Y = e.getY();
-					break;
-				}
-				case MouseEvent.BUTTON3:
-				{
-					keys.MOUSE_X = e.getX();
-					keys.MOUSE_Y = e.getY();
-					break;
+					case MouseEvent.BUTTON1:
+					{
+						inst.fireWeapon(e.getX(), e.getY());
+						keys.MOUSE_LEFT = true;
+						break;
+					}
+					case MouseEvent.BUTTON2:
+					{
+						inst.altFireWeapon(e.getX(), e.getY());
+						keys.MOUSE_RIGHT = true;
+						keys.MOUSE_X = e.getX();
+						keys.MOUSE_Y = e.getY();
+						break;
+					}
+					case MouseEvent.BUTTON3:
+					{
+						keys.MOUSE_X = e.getX();
+						keys.MOUSE_Y = e.getY();
+						break;
+					}
 				}
 			}
 		}
-		
 	}
 	@Override
 	public void mouseReleased(MouseEvent e)
