@@ -117,7 +117,7 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glLoadIdentity();
 		
 		
-		glu.gluPerspective(75, 1, 0.01, 1000);		
+		glu.gluPerspective(60, 1, 0.01, 1000);		
 		//look at the player from 1.5 units directly above the player 
 		glu.gluLookAt(
 				inst.player.pos.x, inst.player.pos.y, 1.5, 
