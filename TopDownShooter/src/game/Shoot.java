@@ -46,7 +46,7 @@ public class Shoot implements Runnable
 	public static final double PLAYER_SPEED = 0.005;
 	public static final int INVENTORY_SIZE = 5;
 	public static final double PARTICLE_SPEED = 0.02;
-	public static final int MAX_MONST = 6000;
+	public static final int MAX_MONST = 5000;
 	public static final double MONST_SPEED = 0.5;
 	public static final double MONST_SIZE = 0.005;
 	public static final double SPAWN_PROB = 1;
@@ -360,6 +360,7 @@ public class Shoot implements Runnable
 	/**
 	 * Incrementally alter the games state.
 	 */
+	long lastFrame = 0;
 	protected void stepGame()
 	{
 		long[] a = new long[8];
@@ -367,6 +368,10 @@ public class Shoot implements Runnable
 		GAME_STARTED = isGameContinuing() && GAME_STARTED;
 		if(GAME_STARTED)
 		{
+			if(DEBUG && gameTime%25 == 0)
+				System.out.printf("Time from last frame: %d\n", System.currentTimeMillis() - lastFrame);
+			lastFrame = System.currentTimeMillis();
+			
 			a[0] = System.currentTimeMillis();
 			this.stepPlayer();
 			a[1] = System.currentTimeMillis();
@@ -397,7 +402,10 @@ public class Shoot implements Runnable
 						a[7] - a[0]);
 				
 				System.out.printf("ec:%d pa:%d dy:%d pr:%d\n", entityWrapper.ents.size(), entityWrapper.pathEnts.size(), entityWrapper.dynamics.size() , entityWrapper.projectiles.size());
+				
 			}
+			
+			
 		}
 	}
 	

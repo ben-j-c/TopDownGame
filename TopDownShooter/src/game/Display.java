@@ -30,7 +30,7 @@ public class Display  extends JFrame implements GLEventListener
 	{
 		synchronized(inst)
 		{
-			inst.stepGame();
+			//inst.stepGame();
 			
 			GL2 gl = drawable.getGL().getGL2();
 			
@@ -327,11 +327,13 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glTranslated(x, y, z);
 		gl.glBegin(GL2.GL_QUADS);
 		
+		/*
 		gl.glNormal3d(0, 0, -1);
 		gl.glVertex3d(-r, -r, -r);
 		gl.glVertex3d(+r, -r, -r);
 		gl.glVertex3d(+r, +r, -r);
 		gl.glVertex3d(-r, +r, -r);
+		*/
 		
 		gl.glNormal3d(0, 0, 1);
 		gl.glVertex3d(-r, -r, +r);
@@ -339,6 +341,7 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glVertex3d(+r, +r, +r);
 		gl.glVertex3d(-r, +r, +r);
 		
+		/*
 		gl.glNormal3d(0, -1, 0);
 		gl.glVertex3d(-r, -r, -r);
 		gl.glVertex3d(+r, -r, -r);
@@ -362,7 +365,7 @@ public class Display  extends JFrame implements GLEventListener
 		gl.glVertex3d(-r, +r, -r);
 		gl.glVertex3d(-r, +r, +r);
 		gl.glVertex3d(-r, -r, +r);
-		
+		*/
 		gl.glEnd();
 		gl.glPopMatrix();
 	}
