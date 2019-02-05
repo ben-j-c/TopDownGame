@@ -13,7 +13,7 @@ import geo.Triangle.BlockingVector;
  */
 public class Triangle implements Comparable<Triangle>
 {
-	public static final double LARGE_VALUE = 1337.69;
+	public static final double LARGE_VALUE = 133769.0;
 	public static final double DEFAULT_ERROR = 0.000001f; 
 	
 	public static class BlockingVector
