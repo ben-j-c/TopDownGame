@@ -1,5 +1,6 @@
 package geo;
 
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -47,7 +48,7 @@ public class AStar
 		openSet.add(new FVWrapper(start, heuristic(start, end)));
 		
 		TreeMap<Vector, Vector> cameFrom = new TreeMap<Vector, Vector>();
-		TreeMap<Vector, Double> gScore = new TreeMap<Vector, Double>();
+		HashMap<Vector, Double> gScore = new HashMap<Vector, Double>();
 		gScore.put(start, 0.0);
 		
 		TreeMap<Vector, Double> fScore = new TreeMap<Vector, Double>();
@@ -80,7 +81,7 @@ public class AStar
 					{
 						cameFrom.put(nei, current.v);
 						gScore.put(nei, tenative);
-						double f = g + heuristic(nei, end);
+						double f = tenative + heuristic(nei, end);
 						fScore.put(nei, f);
 						
 						neiOpen.fScore = f;
